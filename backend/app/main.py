@@ -22,6 +22,7 @@ from backend.app.api.research_api import router as research_router
 from backend.app.api.automation_api import router as automation_router
 from backend.app.api.security_api import router as security_router
 from backend.app.api.diagnostics_api import router as diagnostics_router
+from backend.app.api.public_apis_api import router as public_apis_router
 from backend.app.core.ollama_client import ollama_client
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
@@ -80,6 +81,7 @@ app.include_router(research_router)
 app.include_router(automation_router)
 app.include_router(security_router)
 app.include_router(diagnostics_router)
+app.include_router(public_apis_router)
 
 # Mount frontend static files if directory exists
 if FRONTEND_DIR.exists():

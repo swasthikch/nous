@@ -191,3 +191,26 @@ Double-click `run_nous.bat` in the project root:
 # 2. Start Backend Server
 python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
+
+---
+
+## 7. Curated Public APIs Integration (`public-apis/public-apis`)
+
+To extend NOUS with real-time global utility without requiring paid accounts or API keys, NOUS integrates selected keyless, HTTPS, CORS-enabled endpoints from the [public-apis/public-apis](https://github.com/public-apis/public-apis) directory:
+
+```
++---------------------+------------------------------------------------+----------------------------+
+| Domain              | Provider & Public Endpoint                     | Anti-Hallucination Tool    |
++---------------------+------------------------------------------------+----------------------------+
+| Weather & Climate   | Open-Meteo (`api.open-meteo.com`) & wttr.in    | `get_weather_forecast`     |
+| Lexicon & Language  | Free Dictionary API (`api.dictionaryapi.dev`)  | `lookup_dictionary_definition` |
+| Currency Exchange   | Frankfurter API (`api.frankfurter.dev`) / ECB   | `convert_currency`         |
+| Humor & Jokes       | Official Joke API (`official-joke-api.appspot`)| `get_random_joke`          |
++---------------------+------------------------------------------------+----------------------------+
+```
+
+### Architectural Guarantees:
+1. **Zero-Setup & Free Access**: All providers require no personal token, credit card, or authentication header.
+2. **Deterministic Offline Fallbacks**: If external networks are unreachable or offline lockdown is active, each service automatically falls back to verified cached benchmark datasets with `is_offline_fallback=True` without failing.
+3. **Anti-Hallucination Verification**: The `AIEngine` intercepts weather, definition, currency, and joke intents at the heuristic classifier layer, executes the verified tool, and injects verified facts into the prompt before the model synthesizes the user-facing response.
+

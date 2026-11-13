@@ -56,6 +56,7 @@ python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 | **Phase 13** | **Computer & Task Automation** | Path traversal prevention, dangerous command blocklist, HITL 5-minute approval tokens, background scheduler. |
 | **Phase 14** | **Security Vault & Privacy Controls** | Zero-trust credential redactor, Offline Lockdown switch, Memory Retention Pause, immutable audit trail. |
 | **Phase 15** | **System Diagnostics & Polish** | Hardware load telemetry (16GB shared limit), database integrity checks across all 7 DBs, in-process smoke test. |
+| **Public APIs** | **Open Keyless API Integrations** | Curated from `public-apis/public-apis`: Open-Meteo Weather, Free Dictionary API, Frankfurter ECB Currency, Official Joke API with offline fallback. |
 
 ---
 
@@ -87,6 +88,10 @@ All databases operate in Write-Ahead Logging (`WAL`) mode in `data/database/`:
 Run all verification test suites directly in PowerShell:
 
 ```powershell
+# Execute the Master Runner (All 14 Suites)
+.\.venv\Scripts\python.exe backend/tests/run_all_tests.py
+
+# Or run individual verification suites:
 .\.venv\Scripts\python.exe backend/tests/test_phase1.py
 .\.venv\Scripts\python.exe backend/tests/test_phase2.py
 .\.venv\Scripts\python.exe backend/tests/test_phase5.py
@@ -99,6 +104,8 @@ Run all verification test suites directly in PowerShell:
 .\.venv\Scripts\python.exe backend/tests/test_phase13.py
 .\.venv\Scripts\python.exe backend/tests/test_phase14.py
 .\.venv\Scripts\python.exe backend/tests/test_phase15.py
+.\.venv\Scripts\python.exe backend/tests/test_public_apis.py
+.\.venv\Scripts\python.exe backend/tests/test_live_server.py
 ```
 
 *For detailed architectural explanations, schema diagrams, and subsystem contracts, refer to [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).*

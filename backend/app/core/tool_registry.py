@@ -1632,6 +1632,99 @@ def purge_transient_security_data() -> dict[str, Any]:
     return security_vault.purge_transient_data()
 
 
+# =====================================================================
+# PUBLIC APIS INTEGRATION (From github.com/public-apis/public-apis)
+# =====================================================================
+
+@tool_registry.register(
+    name="get_weather_forecast",
+    description="Fetch live and verified weather forecast, temperature, humidity, conditions, and wind speed for any location or city worldwide via Open-Meteo public API.",
+    parameters=[
+        ToolParameter(
+            name="location",
+            type="string",
+            description="The city or geographic location to check weather for (e.g. 'London', 'Tokyo', 'San Francisco', 'Bengaluru').",
+            required=True,
+        ),
+    ],
+    risk_level=RiskLevel.LOW,
+)
+async def get_weather_forecast(location: str) -> dict[str, Any]:
+    from backend.app.services.public_apis import public_api_service
+    return await public_api_service.get_weather(location=location)
+
+
+@tool_registry.register(
+    name="lookup_dictionary_definition",
+    description="Look up English definitions, pronunciations, phonetics, parts of speech, synonyms, and usage examples via Free Dictionary API.",
+    parameters=[
+        ToolParameter(
+            name="word",
+            type="string",
+            description="The English word to look up in the dictionary.",
+            required=True,
+        ),
+    ],
+    risk_level=RiskLevel.LOW,
+)
+async def lookup_dictionary_definition(word: str) -> dict[str, Any]:
+    from backend.app.services.public_apis import public_api_service
+    return await public_api_service.lookup_definition(word=word)
+
+
+@tool_registry.register(
+    name="convert_currency",
+    description="Convert monetary amounts between global currencies using live European Central Bank exchange rates via the Frankfurter API.",
+    parameters=[
+        ToolParameter(
+            name="amount",
+            type="number",
+            description="The monetary value to convert.",
+            required=True,
+        ),
+        ToolParameter(
+            name="from_currency",
+            type="string",
+            description="The source currency (e.g. 'USD', 'EUR', 'GBP', 'INR', 'JPY').",
+            required=True,
+        ),
+        ToolParameter(
+            name="to_currency",
+            type="string",
+            description="The target currency to convert into (e.g. 'USD', 'EUR', 'GBP', 'INR', 'JPY').",
+            required=True,
+        ),
+    ],
+    risk_level=RiskLevel.LOW,
+)
+async def convert_currency(amount: float, from_currency: str, to_currency: str) -> dict[str, Any]:
+    from backend.app.services.public_apis import public_api_service
+    return await public_api_service.convert_currency(
+        amount=amount,
+        from_currency=from_currency,
+        to_currency=to_currency,
+    )
+
+
+@tool_registry.register(
+    name="get_random_joke",
+    description="Fetch a clean humor or programming joke from the Official Joke API.",
+    parameters=[
+        ToolParameter(
+            name="category",
+            type="string",
+            description="Optional category of joke: 'general' or 'programming'.",
+            required=False,
+        ),
+    ],
+    risk_level=RiskLevel.LOW,
+)
+async def get_random_joke(category: Optional[str] = "general") -> dict[str, Any]:
+    from backend.app.services.public_apis import public_api_service
+    return await public_api_service.get_random_joke(category=category)
+
+
+
 
 
 

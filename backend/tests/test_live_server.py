@@ -174,6 +174,24 @@ async def run_live_tests() -> None:
         print("   Research note cleanup verified.")
         print("   Web Research Engine & Knowledge Notebook verified.")
 
+        # 13. Public APIs check (Open-Meteo, Dictionary, Frankfurter)
+        print("13. Testing Public APIs (/api/public)...")
+        r_pub_w = await client.get("/api/public/weather", params={"location": "London"})
+        assert r_pub_w.status_code == 200
+        assert r_pub_w.json().get("success") is True
+        print(f"   Weather endpoint: {r_pub_w.json().get('location')}")
+
+        r_pub_d = await client.get("/api/public/dictionary", params={"word": "nous"})
+        assert r_pub_d.status_code == 200
+        assert r_pub_d.json().get("success") is True
+        print(f"   Dictionary endpoint: {r_pub_d.json().get('word')}")
+
+        r_pub_c = await client.get("/api/public/currency", params={"amount": 100, "from_currency": "USD", "to_currency": "EUR"})
+        assert r_pub_c.status_code == 200
+        assert r_pub_c.json().get("success") is True
+        print(f"   Currency endpoint: 100 USD = {r_pub_c.json().get('converted_amount')} EUR")
+        print("   Public APIs verified.")
+
     print("\n=======================================================")
     print("ALL LIVE NOUS SUBSYSTEMS (PHASES 1-12) PASSED 100%!")
     print("=======================================================")

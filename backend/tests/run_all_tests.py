@@ -27,6 +27,7 @@ TEST_SUITES = [
     {"phase": "Phase 13", "name": "Computer Automation & Guardrails", "file": "test_phase13.py"},
     {"phase": "Phase 14", "name": "Security Vault, Privacy & Redaction", "file": "test_phase14.py"},
     {"phase": "Phase 15", "name": "System Diagnostics & E2E Integration", "file": "test_phase15.py"},
+    {"phase": "Public APIs", "name": "Open-Meteo, Dictionary, Frankfurter & Jokes", "file": "test_public_apis.py"},
     {"phase": "Live Server", "name": "ASGI Dispatch & Live Server Smoke", "file": "test_live_server.py"},
 ]
 

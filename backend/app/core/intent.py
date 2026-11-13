@@ -51,6 +51,10 @@ class IntentType(str, Enum):
     PRIVACY_SETTINGS = "privacy_settings"
     OFFLINE_LOCKDOWN = "offline_lockdown"
     PURGE_SECURITY = "purge_security"
+    WEATHER_QUERY = "weather_query"
+    DICTIONARY_LOOKUP = "dictionary_lookup"
+    CURRENCY_CONVERT = "currency_convert"
+    RANDOM_JOKE = "random_joke"
     COMPLEX_REASONING = "complex_reasoning"
     GENERAL_CHAT = "general_chat"
 
@@ -649,6 +653,73 @@ class IntentClassifier:
                 confidence=0.95,
                 suggested_tool="purge_transient_security_data",
                 tool_parameters={},
+                requires_cloud_routing=False,
+            )
+
+        # 34. Check Weather Query (Public APIs - Open-Meteo)
+        weather_match = re.search(
+            r"\b(?:what(?:'s|\s+is)\s+the\s+weather\s+(?:in|for|like\s+in)|how(?:'s|\s+is)\s+the\s+weather\s+in|weather\s+(?:forecast\s+for|in|for|at)|forecast\s+for|temperature\s+in)\s+([a-zA-Z\s]+?)(?:\s+today|\s+now|\s+tomorrow|\?|$)",
+            text,
+            re.IGNORECASE,
+        )
+        if not weather_match:
+            weather_match = re.search(r"\b([a-zA-Z]{3,25})\s+weather\b", text, re.IGNORECASE)
+
+        if weather_match:
+            target_city = weather_match.group(1).strip()
+            # Avoid matching common keywords as city names
+            if target_city.lower() not in {"the", "my", "current", "this", "today"}:
+                return IntentResult(
+                    intent=IntentType.WEATHER_QUERY,
+                    confidence=0.94,
+                    suggested_tool="get_weather_forecast",
+                    tool_parameters={"location": target_city},
+                    requires_cloud_routing=False,
+                )
+
+        # 35. Check Dictionary Lookup (Public APIs - Free Dictionary)
+        dict_match = re.search(
+            r"\b(?:what\s+does\s+['\"]?([a-zA-Z\-]{2,30})['\"]?\s+mean|meaning\s+of\s+['\"]?([a-zA-Z\-]{2,30})['\"]?|definition\s+of\s+['\"]?([a-zA-Z\-]{2,30})['\"]?|define\s+['\"]?([a-zA-Z\-]{2,30})['\"]?)\b",
+            text,
+            re.IGNORECASE,
+        )
+        if dict_match:
+            lookup_word = next(w for w in dict_match.groups() if w is not None).strip()
+            if lookup_word.lower() not in {"the", "a", "an", "this", "that"}:
+                return IntentResult(
+                    intent=IntentType.DICTIONARY_LOOKUP,
+                    confidence=0.94,
+                    suggested_tool="lookup_dictionary_definition",
+                    tool_parameters={"word": lookup_word},
+                    requires_cloud_routing=False,
+                )
+
+        # 36. Check Currency Conversion (Public APIs - Frankfurter)
+        currency_match = re.search(
+            r"\b(?:convert|how\s+much\s+is)\s+([\d\.]+)\s*([a-zA-Z]{3}|dollars?|euros?|pounds?|rupees?|yen|cad|aud|chf|cny|sgd)\s+(?:to|in|into)\s+([a-zA-Z]{3}|dollars?|euros?|pounds?|rupees?|yen|cad|aud|chf|cny|sgd)\b",
+            text,
+            re.IGNORECASE,
+        )
+        if currency_match:
+            raw_amt = float(currency_match.group(1))
+            from_c = currency_match.group(2).strip()
+            to_c = currency_match.group(3).strip()
+            return IntentResult(
+                intent=IntentType.CURRENCY_CONVERT,
+                confidence=0.95,
+                suggested_tool="convert_currency",
+                tool_parameters={"amount": raw_amt, "from_currency": from_c, "to_currency": to_c},
+                requires_cloud_routing=False,
+            )
+
+        # 37. Check Joke / Humor (Public APIs - Official Joke API)
+        if re.search(r"\b(?:tell\s+me\s+a\s+joke|random\s+joke|programming\s+joke|developer\s+joke|crack\s+a\s+joke|make\s+me\s+laugh)\b", text, re.IGNORECASE):
+            joke_cat = "programming" if "programming" in text.lower() or "developer" in text.lower() else "general"
+            return IntentResult(
+                intent=IntentType.RANDOM_JOKE,
+                confidence=0.94,
+                suggested_tool="get_random_joke",
+                tool_parameters={"category": joke_cat},
                 requires_cloud_routing=False,
             )
 
