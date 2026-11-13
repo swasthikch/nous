@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css?v=1.0.5">
+    <link rel="stylesheet" href="/static/css/style.css?v=1.0.6">
 </head>
 <body class="dark-theme">
     <div class="app-container">
@@ -15,11 +15,14 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="brand">
-                    <div class="brand-orb"></div>
-                    <div class="brand-text">
-                        <h1>NOUS</h1>
-                        <span class="version-tag">v1.0.0 · Production</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="brand-orb"></div>
+                        <div class="brand-text">
+                            <h1>NOUS</h1>
+                            <span class="version-tag">v1.0.0 · Production</span>
+                        </div>
                     </div>
+                    <button id="sidebar-close-btn" class="sidebar-close-btn" aria-label="Close Sidebar">&times;</button>
                 </div>
                 <p class="tagline">Your Intelligence. Your Memory. Your Assistant.</p>
             </div>
@@ -118,8 +121,25 @@
             </div>
         </aside>
 
+        <!-- Mobile Backdrop Overlay -->
+        <div id="mobile-backdrop" class="mobile-backdrop"></div>
+
         <!-- Main Content Area -->
         <main class="main-content">
+            <!-- Mobile Top Bar (Smartphones <= 768px) -->
+            <header class="mobile-top-bar">
+                <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle navigation menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div class="mobile-brand">
+                    <div class="brand-orb" style="width: 18px; height: 18px;"></div>
+                    <span class="mobile-brand-title">NOUS</span>
+                </div>
+                <button id="mobile-new-chat-btn" class="mobile-icon-btn" aria-label="New Conversation">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+            </header>
+
             <!-- Top Bar -->
             <header class="topbar">
                 <div class="topbar-left">
@@ -1681,6 +1701,6 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
         </div>
     </div>
 
-    <script src="/static/js/app.js?v=1.0.5"></script>
+    <script src="/static/js/app.js?v=1.0.6"></script>
 </body>
 </html>

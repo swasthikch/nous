@@ -25,9 +25,9 @@ if %errorlevel% equ 0 (
     echo         If local inference is required, please launch Ollama.
 )
 
-echo [3/3] Launching NOUS Web Server on http://127.0.0.1:8000 ...
+echo [3/3] Launching NOUS Web Server (Laptop: http://127.0.0.1:8000 ^| Phone: http://192.168.1.4:8000) ...
 start "" http://127.0.0.1:8000
 
-python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
+python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
 
 pause

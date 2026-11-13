@@ -4535,6 +4535,284 @@ body {
     font-family: var(--font-mono);
 }
 
+/* =====================================================================
+   MOBILE SMARTPHONE OPTIMIZATION (Screens <= 768px, iPhones & Androids)
+   ===================================================================== */
+
+/* Hidden on desktop */
+.mobile-top-bar {
+    display: none;
+}
+
+.mobile-backdrop {
+    display: none;
+}
+
+.sidebar-close-btn {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    body, html {
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .app-container {
+        flex-direction: column !important;
+        height: 100vh;
+        height: 100dvh;
+        width: 100vw;
+        overflow: hidden;
+    }
+
+    /* Mobile Topbar */
+    .mobile-top-bar {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 14px;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+        height: 52px;
+        flex-shrink: 0;
+        z-index: 99;
+    }
+
+    .mobile-menu-btn, .mobile-icon-btn {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+    }
+
+    .mobile-menu-btn:active, .mobile-icon-btn:active {
+        background: rgba(0, 212, 255, 0.15);
+        border-color: var(--accent-cyan);
+    }
+
+    .mobile-menu-btn svg, .mobile-icon-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .mobile-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mobile-brand-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        background: linear-gradient(120deg, #fff, var(--accent-cyan));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Sidebar Drawer */
+    .sidebar {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 285px !important;
+        min-width: 285px !important;
+        max-width: 82vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        z-index: 1000 !important;
+        transform: translateX(-105%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 28px rgba(0, 0, 0, 0.75);
+        background: var(--bg-secondary) !important;
+        overflow-y: auto !important;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0) !important;
+    }
+
+    /* Close Button inside Sidebar */
+    .sidebar-close-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        font-size: 1.3rem;
+        line-height: 1;
+        cursor: pointer;
+        margin-left: auto;
+    }
+
+    .sidebar-header .brand {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    /* Dark Backdrop */
+    .mobile-backdrop {
+        display: block !important;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.28s ease;
+    }
+
+    .mobile-backdrop.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Main Content */
+    .main-content {
+        width: 100% !important;
+        height: calc(100vh - 52px) !important;
+        height: calc(100dvh - 52px) !important;
+        overflow-y: auto;
+    }
+
+    /* Desktop topbar modifications on mobile */
+    .topbar {
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .topbar-left {
+        gap: 8px;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .header-status-pill {
+        font-size: 0.72rem;
+        padding: 3px 8px;
+    }
+
+    .mode-pill-group {
+        scale: 0.92;
+        transform-origin: right center;
+    }
+
+    .topbar-right {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 2px;
+    }
+
+    .model-selector-wrapper {
+        font-size: 0.75rem;
+    }
+
+    .model-select {
+        font-size: 0.75rem;
+        max-width: 160px;
+    }
+
+    /* Chat View */
+    .chat-view {
+        height: 100%;
+        padding: 0;
+    }
+
+    .chat-messages {
+        padding: 10px 10px 14px 10px;
+        gap: 12px;
+    }
+
+    .message {
+        max-width: 94% !important;
+        font-size: 0.88rem;
+    }
+
+    .welcome-card {
+        padding: 20px 14px;
+        margin: 10px 8px;
+    }
+
+    .welcome-card h2 {
+        font-size: 1.25rem;
+    }
+
+    .feature-chips {
+        gap: 6px;
+    }
+
+    .chip {
+        font-size: 0.7rem;
+        padding: 5px 9px;
+    }
+
+    /* Input Bar */
+    .chat-input-area {
+        padding: 8px 10px;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+
+    .input-bar {
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+
+    .chat-input {
+        font-size: 0.92rem;
+        padding: 8px 6px;
+    }
+
+    .btn-send {
+        width: 38px;
+        height: 38px;
+    }
+
+    /* Voice View */
+    .voice-view-container {
+        padding: 14px 10px;
+    }
+
+    .voice-orb-wrapper {
+        scale: 0.85;
+    }
+
+    /* Responsive Grid Layouts (Single Column on Phone) */
+    .memory-main-layout,
+    .routine-layout,
+    .email-workspace-layout,
+    .projects-main-layout,
+    .market-workspace-layout,
+    .research-workspace-layout,
+    .automation-grid-layout,
+    .security-grid-layout,
+    .diagnostics-main-layout {
+        grid-template-columns: 1fr !important;
+        gap: 14px;
+        padding: 10px 8px !important;
+    }
+}
+
+
 
 
 

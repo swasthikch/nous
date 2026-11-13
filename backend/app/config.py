@@ -21,7 +21,7 @@ class Settings:
     PROJECT_ROOT: Path = PROJECT_ROOT
     BACKEND_DIR: Path = BACKEND_DIR
     VERSION: str = "0.1.0"
-    HOST: str = os.getenv("HOST", "127.0.0.1")
+    HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", "8000"))
 
     # Ollama settings

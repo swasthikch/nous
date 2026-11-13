@@ -294,6 +294,53 @@ document.addEventListener("DOMContentLoaded", () => {
             loadPrivacySettings();
             loadAuditTrail();
         }
+
+        // Close mobile drawer if open on smartphone screens
+        closeMobileDrawer();
+    }
+
+    // ==============================================================
+    // MOBILE RESPONSIVE DRAWER & TOUCH INTERACTION
+    // ==============================================================
+    const sidebar = document.querySelector(".sidebar");
+    const mobileBackdrop = document.getElementById("mobile-backdrop");
+    const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+    const mobileNewChatBtn = document.getElementById("mobile-new-chat-btn");
+    const sidebarCloseBtn = document.getElementById("sidebar-close-btn");
+
+    function openMobileDrawer() {
+        if (sidebar) sidebar.classList.add("mobile-open");
+        if (mobileBackdrop) mobileBackdrop.classList.add("active");
+    }
+
+    function closeMobileDrawer() {
+        if (sidebar) sidebar.classList.remove("mobile-open");
+        if (mobileBackdrop) mobileBackdrop.classList.remove("active");
+    }
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener("click", () => {
+            if (sidebar && sidebar.classList.contains("mobile-open")) {
+                closeMobileDrawer();
+            } else {
+                openMobileDrawer();
+            }
+        });
+    }
+
+    if (mobileBackdrop) {
+        mobileBackdrop.addEventListener("click", closeMobileDrawer);
+    }
+
+    if (sidebarCloseBtn) {
+        sidebarCloseBtn.addEventListener("click", closeMobileDrawer);
+    }
+
+    if (mobileNewChatBtn) {
+        mobileNewChatBtn.addEventListener("click", () => {
+            if (newChatBtn) newChatBtn.click();
+            closeMobileDrawer();
+        });
     }
 
     navChat.addEventListener("click", (e) => { e.preventDefault(); switchView("chat"); });
