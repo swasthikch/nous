@@ -55,6 +55,7 @@ class IntentType(str, Enum):
     DICTIONARY_LOOKUP = "dictionary_lookup"
     CURRENCY_CONVERT = "currency_convert"
     RANDOM_JOKE = "random_joke"
+    DAEMON_STATUS = "daemon_status"
     COMPLEX_REASONING = "complex_reasoning"
     GENERAL_CHAT = "general_chat"
 
@@ -720,6 +721,16 @@ class IntentClassifier:
                 confidence=0.94,
                 suggested_tool="get_random_joke",
                 tool_parameters={"category": joke_cat},
+                requires_cloud_routing=False,
+            )
+
+        # 38. Check Autonomous Minute Daemon Status
+        if re.search(r"\b(?:daemon\s+status|minute\s+daemon|background\s+daemon|autonomous\s+worker|offline\s+daemon|is\s+the\s+daemon\s+running)\b", text, re.IGNORECASE):
+            return IntentResult(
+                intent=IntentType.DAEMON_STATUS,
+                confidence=0.95,
+                suggested_tool="get_autonomous_daemon_status",
+                tool_parameters={},
                 requires_cloud_routing=False,
             )
 

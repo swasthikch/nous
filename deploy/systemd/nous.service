@@ -1,0 +1,34 @@
+[Unit]
+Description=NOUS Personal AI Assistant Engine & Autonomous Minute Daemon
+Documentation=https://github.com/nous-assistant/core
+After=network.target
+
+[Service]
+Type=simple
+User=nous
+Group=nous
+WorkingDirectory=/opt/nous
+Environment="PYTHONUNBUFFERED=1"
+Environment="HOST=0.0.0.0"
+Environment="PORT=8000"
+Environment="OLLAMA_BASE_URL=http://127.0.0.1:11434"
+Environment="OLLAMA_MODEL=qwen2.5:3b"
+
+# Start the unified backend server which automatically manages the minute daemon
+ExecStart=/opt/nous/.venv/bin/uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --workers 1
+
+# Auto-recovery: restarts immediately if stopped or crashed
+Restart=always
+RestartSec=5s
+
+# Security Hardening for Linux Server
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/opt/nous/data /opt/nous/workspace
+
+# Resource limits
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

@@ -24,6 +24,7 @@ from backend.app.api.security_api import router as security_router
 from backend.app.api.diagnostics_api import router as diagnostics_router
 from backend.app.api.public_apis_api import router as public_apis_router
 from backend.app.core.ollama_client import ollama_client
+from backend.app.automation.daemon import autonomous_daemon
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
 
@@ -45,8 +46,14 @@ async def lifespan(app: FastAPI):
     else:
         print(f"[OLLAMA WARNING] {status.get('detail')}")
 
+    # Start Autonomous Minute-to-Minute Background Daemon
+    autonomous_daemon.start()
+    print("[DAEMON] Autonomous minute-to-minute worker started (offline-resilient).")
+
     yield
 
+    # Clean shutdown of background worker
+    autonomous_daemon.stop()
     print("[NOUS] Shutting down cleanly.")
 
 

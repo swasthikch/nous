@@ -28,6 +28,7 @@ TEST_SUITES = [
     {"phase": "Phase 14", "name": "Security Vault, Privacy & Redaction", "file": "test_phase14.py"},
     {"phase": "Phase 15", "name": "System Diagnostics & E2E Integration", "file": "test_phase15.py"},
     {"phase": "Public APIs", "name": "Open-Meteo, Dictionary, Frankfurter & Jokes", "file": "test_public_apis.py"},
+    {"phase": "Cloud Daemon", "name": "Minute-to-Minute Offline Autonomous Worker", "file": "test_cloud_daemon.py"},
     {"phase": "Live Server", "name": "ASGI Dispatch & Live Server Smoke", "file": "test_live_server.py"},
 ]
 
@@ -99,7 +100,7 @@ def run_master_suite() -> int:
                 print("\n".join(lines[-15:]))
         return 1
 
-    print("\n [ALL 13 MASTER TEST SUITES PASSED WITH 100% SUCCESS!]")
+    print(f"\n [ALL {len(results)} MASTER TEST SUITES PASSED WITH 100% SUCCESS!]")
     return 0
 
 

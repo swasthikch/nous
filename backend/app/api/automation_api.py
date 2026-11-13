@@ -194,3 +194,20 @@ async def get_execution_history(limit: int = Query(50)) -> dict[str, Any]:
     except Exception as e:
         logger.error("Failed to get execution history: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------- AUTONOMOUS MINUTE DAEMON ENDPOINTS ----------------
+
+
+@router.get("/daemon/status")
+async def get_daemon_status() -> dict[str, Any]:
+    """Get the live operational status of the minute-to-minute autonomous daemon."""
+    from backend.app.automation.daemon import autonomous_daemon
+    return autonomous_daemon.get_status()
+
+
+@router.post("/daemon/tick-now")
+async def trigger_daemon_tick(force_offline: bool = False) -> dict[str, Any]:
+    """Manually trigger an immediate execution tick of the autonomous daemon."""
+    from backend.app.automation.daemon import autonomous_daemon
+    return await autonomous_daemon.tick(force_offline_sim=force_offline)

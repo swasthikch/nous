@@ -192,6 +192,15 @@ async def run_live_tests() -> None:
         print(f"   Currency endpoint: 100 USD = {r_pub_c.json().get('converted_amount')} EUR")
         print("   Public APIs verified.")
 
+        # 14. Autonomous Minute Daemon check
+        print("14. Testing Autonomous Minute Daemon (/api/automation/daemon)...")
+        r_daemon = await client.get("/api/automation/daemon/status")
+        assert r_daemon.status_code == 200
+        daemon_data = r_daemon.json()
+        assert daemon_data.get("offline_resilient") is True
+        print(f"   Daemon status verified: {daemon_data.get('current_network_status')}, Ticks: {daemon_data.get('ticks_count')}")
+        print("   Autonomous Minute Daemon verified.")
+
     print("\n=======================================================")
     print("ALL LIVE NOUS SUBSYSTEMS (PHASES 1-12) PASSED 100%!")
     print("=======================================================")

@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: nous-assistant
+    runtime: docker
+    plan: standard
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 8000
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: OFFLINE_LOCKDOWN
+        value: "false"
+      - key: STRICT_PII_REDACTION
+        value: "true"
+    disk:
+      name: nous-persistent-data
+      mountPath: /app/data
+      sizeGB: 10
+    healthCheckPath: /api/health

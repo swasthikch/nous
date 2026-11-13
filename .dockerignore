@@ -1,0 +1,23 @@
+# Version control & virtual environments
+.git
+.gitignore
+.venv
+venv
+env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary runtime files & cache
+.pytest_cache
+.coverage
+htmlcov
+*.log
+.DS_Store
+Thumbs.db
+
+# Transient security & scratch
+*.tmp
+backend/.env
+data/credentials/*.json

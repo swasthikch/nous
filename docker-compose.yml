@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  # -------------------------------------------------------------------
+  # NOUS Core Brain & Autonomous Minute-to-Minute Daemon
+  # -------------------------------------------------------------------
+  nous-core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nous-assistant-core
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=qwen2.5:3b
+      - OFFLINE_LOCKDOWN=false
+      - STRICT_PII_REDACTION=true
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - nous_data:/app/data
+      - nous_workspace:/app/workspace
+    depends_on:
+      ollama:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # -------------------------------------------------------------------
+  # Local In-Cluster Ollama LLM Engine (Zero External Cloud Dependency)
+  # -------------------------------------------------------------------
+  ollama:
+    image: ollama/ollama:latest
+    container_name: nous-ollama-engine
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+
+volumes:
+  nous_data:
+    name: nous_data
+  nous_workspace:
+    name: nous_workspace
+  ollama_models:
+    name: ollama_models

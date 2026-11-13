@@ -1724,6 +1724,40 @@ async def get_random_joke(category: Optional[str] = "general") -> dict[str, Any]
     return await public_api_service.get_random_joke(category=category)
 
 
+# =====================================================================
+# AUTONOMOUS MINUTE-TO-MINUTE DAEMON TOOLS
+# =====================================================================
+
+@tool_registry.register(
+    name="get_autonomous_daemon_status",
+    description="Check the operational status, total ticks, offline resilience, and network state of the NOUS minute-to-minute autonomous background daemon.",
+    parameters=[],
+    risk_level=RiskLevel.LOW,
+)
+def get_autonomous_daemon_status() -> dict[str, Any]:
+    from backend.app.automation.daemon import autonomous_daemon
+    return autonomous_daemon.get_status()
+
+
+@tool_registry.register(
+    name="trigger_autonomous_tick",
+    description="Manually trigger an immediate cycle of the autonomous minute daemon (verifies routine, heartbeats, and offline safety).",
+    parameters=[
+        ToolParameter(
+            name="force_offline",
+            type="boolean",
+            description="If true, tests offline simulation mode.",
+            required=False,
+        ),
+    ],
+    risk_level=RiskLevel.LOW,
+)
+async def trigger_autonomous_tick(force_offline: bool = False) -> dict[str, Any]:
+    from backend.app.automation.daemon import autonomous_daemon
+    return await autonomous_daemon.tick(force_offline_sim=force_offline)
+
+
+
 
 
 

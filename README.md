@@ -57,6 +57,7 @@ python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 | **Phase 14** | **Security Vault & Privacy Controls** | Zero-trust credential redactor, Offline Lockdown switch, Memory Retention Pause, immutable audit trail. |
 | **Phase 15** | **System Diagnostics & Polish** | Hardware load telemetry (16GB shared limit), database integrity checks across all 7 DBs, in-process smoke test. |
 | **Public APIs** | **Open Keyless API Integrations** | Curated from `public-apis/public-apis`: Open-Meteo Weather, Free Dictionary API, Frankfurter ECB Currency, Official Joke API with offline fallback. |
+| **Cloud & Daemon**| **Autonomous Minute-to-Minute Worker** | 24/7 background daemon ticking every 60s, 100% offline-resilient, Docker container, Systemd unit, zero-crash network probe. |
 
 ---
 
@@ -83,12 +84,24 @@ All databases operate in Write-Ahead Logging (`WAL`) mode in `data/database/`:
 
 ---
 
+## ☁️ Cloud Deployment & Minute-to-Minute Offline Resilience
+
+NOUS is containerized and cloud-ready for continuous 24/7 background operation:
+
+- **Autonomous Minute Daemon**: Automatically ticks every 60 seconds. Performs non-blocking network presence probes (`0.8s` timeout).
+- **Zero-Network Fault-Tolerance**: If the cloud host or local machine loses internet connectivity, the daemon seamlessly switches into Autonomous Offline Mode without crashing. It evaluates local routine schedules, maintains SQLite WAL journals, and records persistent heartbeat logs.
+- **Docker & Docker Compose**: Multi-container stack (`Dockerfile`, `docker-compose.yml`) pairing NOUS with an internal Ollama container and persistent SQLite volumes.
+- **Linux Systemd Service**: Auto-restart unit `deploy/systemd/nous.service` ensures automatic recovery within 5 seconds if a host crashes or reboots.
+- *Detailed instructions for Docker, Ubuntu VPS, Render, Fly.io, and Railway are in [`docs/CLOUD_DEPLOYMENT.md`](docs/CLOUD_DEPLOYMENT.md).*
+
+---
+
 ## 🧪 Comprehensive Verification Suite
 
 Run all verification test suites directly in PowerShell:
 
 ```powershell
-# Execute the Master Runner (All 14 Suites)
+# Execute the Master Runner (All 15 Suites)
 .\.venv\Scripts\python.exe backend/tests/run_all_tests.py
 
 # Or run individual verification suites:
@@ -105,6 +118,7 @@ Run all verification test suites directly in PowerShell:
 .\.venv\Scripts\python.exe backend/tests/test_phase14.py
 .\.venv\Scripts\python.exe backend/tests/test_phase15.py
 .\.venv\Scripts\python.exe backend/tests/test_public_apis.py
+.\.venv\Scripts\python.exe backend/tests/test_cloud_daemon.py
 .\.venv\Scripts\python.exe backend/tests/test_live_server.py
 ```
 
