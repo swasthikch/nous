@@ -92,7 +92,8 @@ NOUS is containerized and cloud-ready for continuous 24/7 background operation:
 - **Zero-Network Fault-Tolerance**: If the cloud host or local machine loses internet connectivity, the daemon seamlessly switches into Autonomous Offline Mode without crashing. It evaluates local routine schedules, maintains SQLite WAL journals, and records persistent heartbeat logs.
 - **Docker & Docker Compose**: Multi-container stack (`Dockerfile`, `docker-compose.yml`) pairing NOUS with an internal Ollama container and persistent SQLite volumes.
 - **Linux Systemd Service**: Auto-restart unit `deploy/systemd/nous.service` ensures automatic recovery within 5 seconds if a host crashes or reboots.
-- *Detailed instructions for Docker, Ubuntu VPS, Render, Fly.io, and Railway are in [`docs/CLOUD_DEPLOYMENT.md`](docs/CLOUD_DEPLOYMENT.md).*
+- **Cloudflare Tunnel (100% Free Remote Gateway)**: Launch [`deploy/cloudflare/start_cloudflare_tunnel.bat`](deploy/cloudflare/start_cloudflare_tunnel.bat) to expose NOUS over a free, encrypted Cloudflare HTTPS URL (`https://xxxx.trycloudflare.com`) accessible from any phone worldwide.
+- *Detailed instructions for Docker, Cloudflare, Ubuntu VPS, Render, Fly.io, and Railway are in [`docs/CLOUD_DEPLOYMENT.md`](docs/CLOUD_DEPLOYMENT.md) and [`docs/CLOUDFLARE_TUNNEL.md`](docs/CLOUDFLARE_TUNNEL.md).*
 
 ---
 
