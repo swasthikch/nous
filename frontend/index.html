@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOUS — Personal AI Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css?v=1.0.5">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <div class="brand-orb"></div>
+                    <div class="brand-text">
+                        <h1>NOUS</h1>
+                        <span class="version-tag">v1.0.0 · Production</span>
+                    </div>
+                </div>
+                <p class="tagline">Your Intelligence. Your Memory. Your Assistant.</p>
+            </div>
+
+            <!-- New Chat Button & Sessions -->
+            <div class="sessions-control">
+                <button id="new-chat-btn" class="btn-new-chat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>New Conversation</span>
+                </button>
+                <div class="sessions-list" id="sessions-list">
+                    <!-- Session items populated dynamically -->
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" id="nav-chat">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    <span>AI Brain & Chat</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-memory">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                    <span>Persistent Memory</span>
+                    <span class="nav-badge" id="memory-count-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-voice">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                    <span>Voice Assistant</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-routine">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>Daily Life & Routine</span>
+                    <span class="nav-badge" id="routine-count-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-email">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    <span>Email Intelligence</span>
+                    <span class="nav-badge" id="email-count-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-projects">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                    <span>Projects & GitHub</span>
+                    <span class="nav-badge" id="projects-count-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-market">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                    <span>Markets & Reasoning</span>
+                    <span class="nav-badge" id="market-session-badge">ACTIVE</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-research">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <span>Web Research & Notes</span>
+                    <span class="nav-badge" id="research-count-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-automation">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                    <span>Task Automation</span>
+                    <span class="nav-badge" id="automation-tasks-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-security">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span>Security & Privacy</span>
+                    <span class="nav-badge" id="security-mode-badge">SECURE</span>
+                </a>
+            </nav>
+
+            <!-- Hardware & System Specs Card -->
+            <div class="system-card">
+                <div class="system-card-header">
+                    <span class="system-card-title">HARDWARE & ENGINE</span>
+                    <span id="system-status-indicator" class="status-dot dot-checking" title="Checking status..."></span>
+                </div>
+                <div class="system-details">
+                    <div class="spec-row">
+                        <span class="spec-label">Processor</span>
+                        <span class="spec-value" id="spec-cpu">Detecting...</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">RAM</span>
+                        <span class="spec-value">16 GB (Shared)</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Engine</span>
+                        <span class="spec-value" id="spec-engine">Ollama Local</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Active Model</span>
+                        <span class="spec-value highlight" id="spec-model">Loading...</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Memory Status</span>
+                        <span class="spec-value highlight" id="spec-memory-status">Active (SQLite)</span>
+                    </div>
+                </div>
+                <button id="refresh-health-btn" class="btn-sm btn-outline">Check Health</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <div class="header-status-pill">
+                        <span class="status-indicator" id="top-status-indicator"></span>
+                        <span class="status-text" id="top-status-text">Connecting to NOUS...</span>
+                    </div>
+                    <!-- Routing Mode Switcher -->
+                    <div class="mode-pill-group">
+                        <button class="mode-pill" data-mode="local">Local</button>
+                        <button class="mode-pill active" data-mode="hybrid">Hybrid</button>
+                        <button class="mode-pill" data-mode="cloud">Cloud</button>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="model-selector-wrapper">
+                        <label for="model-select">Model:</label>
+                        <select id="model-select" class="model-select">
+                            <option value="">Loading models...</option>
+                        </select>
+                    </div>
+                    <button id="clear-chat-btn" class="btn-sm btn-ghost" title="Clear current session">Clear</button>
+                </div>
+            </header>
+
+            <!-- Live Market Ticker Tape (Phase 10) -->
+            <div class="market-ticker-tape" id="market-ticker-tape">
+                <div class="ticker-content" id="ticker-content">
+                    <span class="ticker-item"><strong class="ticker-sym">NIFTY 50</strong> <span class="ticker-loading">Loading market telemetry...</span></span>
+                </div>
+            </div>
+
+            <!-- VIEW 1: AI Chat View -->
+            <div id="view-chat" class="view-panel active">
+                <div class="chat-container" id="chat-messages">
+                    <!-- Welcome Banner -->
+                    <div class="welcome-card" id="welcome-card">
+                        <div class="welcome-orb"></div>
+                        <h2>Welcome to NOUS</h2>
+                        <p class="welcome-subtitle">Your personal AI brain is operational with Multi-Turn Memory & Anti-Hallucination Tool Calling.</p>
+                        
+                        <div class="hardware-note">
+                            <strong>Memory Active:</strong> NOUS remembers approved user facts, learning goals, routines, and projects persistently in SQLite.
+                        </div>
+
+                        <div class="quick-prompts-section">
+                            <p class="quick-title">Test memory, tools & reasoning:</p>
+                            <div class="quick-prompts-grid">
+                                <button class="quick-prompt-btn" data-prompt="Remember that my name is Dev and I am studying Computer Science and Machine Learning.">
+                                    🧠 Remember my name & learning goals
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="What do you remember about my profile and projects?">
+                                    🔍 Recall my saved memories
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="What is the exact current date, time, and day of the week?">
+                                    🕒 What is the exact date and time?
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="Calculate (1500 * 1.18) - 250">
+                                    🧮 Calculate: (1500 * 1.18) - 250
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="What is my schedule today?">
+                                    📅 Show my daily schedule
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="Generate daily review and debrief">
+                                    🌙 Evening daily review
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="NOUS, check my emails and deadlines">
+                                    📧 Check emails & deadlines
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="Summarise today's unread emails">
+                                    📬 Summarize unread emails
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="NOUS, check my project progress">
+                                    🚀 Check project progress
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="Summarise recent commits on the repository">
+                                    🐙 Summarize recent commits
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="Why is the market down today?">
+                                    📉 Why is the market down today?
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="Show market overview and benchmark indices">
+                                    📊 Show market overview
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="What is the stock price of Reliance?">
+                                    💰 Reliance share price
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="Are FII buying or selling today?">
+                                    🏛️ FII & DII institutional flows
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="Research Raft consensus algorithm and explain its safety proofs">
+                                    🔬 Research Raft consensus
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="Search the web for FastAPI features and benchmarks">
+                                    🌐 Search web for FastAPI
+                                </button>
+                                <button class="quick-prompt-btn" data-prompt="Conduct research on quantum computing advantages and limitations">
+                                    ⚛️ Research quantum computing
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input Bar -->
+                <footer class="chat-input-area">
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="chat-input" 
+                            placeholder="Ask NOUS anything, teach it facts, or trigger tools... (Enter to send, Shift+Enter for newline)" 
+                            rows="1"
+                        ></textarea>
+                        <button id="send-btn" class="send-btn" title="Send message" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="input-footer">
+                        <span id="session-label">Session: Default</span>
+                        <span id="response-stats" class="response-stats"></span>
+                    </div>
+                </footer>
+            </div>
+
+            <!-- VIEW 2: Persistent Memory Management View -->
+            <div id="view-memory" class="view-panel">
+                <div class="memory-dashboard">
+                    <!-- Memory Control Header -->
+                    <div class="memory-header-card">
+                        <div class="memory-header-info">
+                            <h2>Personal Memory Manager</h2>
+                            <p>View, edit, filter, and control persistent memories stored in SQLite.</p>
+                        </div>
+                        <div class="memory-header-actions">
+                            <div class="toggle-wrapper">
+                                <label class="toggle-label" for="memory-toggle">System Memory:</label>
+                                <input type="checkbox" id="memory-toggle" class="toggle-checkbox" checked>
+                            </div>
+                            <button id="btn-add-memory" class="btn-sm btn-primary">+ Add Memory</button>
+                        </div>
+                    </div>
+
+                    <!-- Filter & Search Toolbar -->
+                    <div class="memory-toolbar">
+                        <div class="category-tabs" id="category-tabs">
+                            <button class="cat-tab active" data-cat="">All</button>
+                            <button class="cat-tab" data-cat="user_profile">User Profile</button>
+                            <button class="cat-tab" data-cat="personal_info">Personal Info</button>
+                            <button class="cat-tab" data-cat="project">Projects</button>
+                            <button class="cat-tab" data-cat="routine">Routines</button>
+                            <button class="cat-tab" data-cat="conversation">Conversations</button>
+                        </div>
+                        <div class="memory-search-wrapper">
+                            <input type="text" id="memory-search-input" placeholder="Search memories by keyword..." class="memory-search-input">
+                        </div>
+                    </div>
+
+                    <!-- Memory Cards Grid -->
+                    <div class="memory-grid" id="memory-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: Voice Assistant View -->
+            <div id="view-voice" class="view-panel">
+                <div class="voice-dashboard">
+                    <div class="voice-header-card">
+                        <div class="voice-header-info">
+                            <h2>Voice Assistant</h2>
+                            <p>Real-time bidirectional speech recognition & synthesis inspired by JARVIS.</p>
+                        </div>
+                        <div class="voice-badge-indicator" id="voice-engine-badge">
+                            <span class="status-dot dot-online"></span> Web Voice Engine
+                        </div>
+                    </div>
+
+                    <!-- Holographic Voice Orb Stage -->
+                    <div class="voice-stage">
+                        <div class="voice-orb-wrapper" id="voice-orb-wrapper">
+                            <div class="orb-outer-ring"></div>
+                            <div class="orb-inner-wave"></div>
+                            <div class="orb-center" id="voice-orb-center">
+                                <svg class="mic-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="voice-status-text" id="voice-status-label">Click the Orb or Microphone to start speaking</div>
+
+                        <!-- Live Transcription / Spoken Answer Box -->
+                        <div class="voice-subtitles-card" id="voice-subtitles-card">
+                            <div class="subtitle-label" id="subtitle-role">Live Transcript:</div>
+                            <div class="subtitle-content" id="subtitle-text">Say "What is the date and time?", "Calculate 50 * 20", or ask any question...</div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="voice-controls-row">
+                            <button id="btn-voice-toggle" class="btn-voice-primary">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                                </svg>
+                                <span id="btn-voice-toggle-text">Start Listening</span>
+                            </button>
+                            <button id="btn-voice-stop" class="btn-voice-danger" title="Stop speech immediately">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="6" y="6" width="12" height="12"></rect>
+                                </svg>
+                                <span>Interrupt Speech</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Voice Configuration Card -->
+                    <div class="voice-settings-card">
+                        <h3>Voice & Speech Configuration</h3>
+                        <div class="voice-settings-grid">
+                            <div class="setting-item">
+                                <label for="select-voice">Voice Character</label>
+                                <select id="select-voice" class="form-control">
+                                    <option value="">Default System Voice</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label for="slider-rate">Speech Rate: <span id="val-rate">1.0x</span></label>
+                                <input type="range" id="slider-rate" min="0.5" max="1.8" step="0.1" value="1.0" class="range-slider">
+                            </div>
+                            <div class="setting-item">
+                                <label for="slider-pitch">Speech Pitch: <span id="val-pitch">1.0</span></label>
+                                <input type="range" id="slider-pitch" min="0.7" max="1.4" step="0.1" value="1.0" class="range-slider">
+                            </div>
+                            <div class="setting-item toggle-item">
+                                <label for="toggle-wake-word">Wake-Word ("Hey NOUS"):</label>
+                                <input type="checkbox" id="toggle-wake-word" class="toggle-checkbox">
+                            </div>
+                            <div class="setting-item toggle-item">
+                                <label for="toggle-chat-auto-speak">Auto-Speak in Text Chat:</label>
+                                <input type="checkbox" id="toggle-chat-auto-speak" class="toggle-checkbox" checked>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 4: Daily Routine & Life Management View -->
+            <div id="view-routine" class="view-panel">
+                <div class="routine-dashboard">
+                    <!-- Routine Header & Controls -->
+                    <div class="routine-header-card">
+                        <div class="routine-header-info">
+                            <h2>Daily Life & Schedule Manager</h2>
+                            <p>Organise daily activities, track completion, detect schedule overlaps, and review productivity.</p>
+                        </div>
+                        <div class="routine-header-actions">
+                            <div class="date-navigator">
+                                <button id="btn-routine-prev-day" class="btn-sm btn-ghost" title="Previous day">&larr;</button>
+                                <input type="date" id="routine-date-picker" class="routine-date-input">
+                                <button id="btn-routine-next-day" class="btn-sm btn-ghost" title="Next day">&rarr;</button>
+                                <button id="btn-routine-today" class="btn-sm btn-outline">Today</button>
+                            </div>
+                            <button id="btn-generate-review" class="btn-sm btn-outline">Evening Review</button>
+                            <button id="btn-add-activity" class="btn-sm btn-primary">+ Add Activity</button>
+                        </div>
+                    </div>
+
+                    <!-- Daily Productivity Metrics Ribbon -->
+                    <div class="routine-stats-ribbon">
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-comp-rate">0%</div>
+                            <div class="stat-label">Completion Rate</div>
+                            <div class="stat-sub" id="stat-comp-sub">0 of 0 completed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-coding-hours">0.0h</div>
+                            <div class="stat-label">Coding Hours</div>
+                            <div class="stat-sub">Active practice logged</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-study-hours">0.0h</div>
+                            <div class="stat-label">Study & College</div>
+                            <div class="stat-sub">Focus time</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-total-tasks">0</div>
+                            <div class="stat-label">Planned Activities</div>
+                            <div class="stat-sub" id="stat-conflicts-sub">No conflicts</div>
+                        </div>
+                    </div>
+
+                    <!-- Overlap / Conflict Alert (dynamically populated) -->
+                    <div id="routine-conflict-banner" class="conflict-banner" style="display: none;">
+                        <div class="conflict-icon">⚠️</div>
+                        <div class="conflict-details" id="conflict-details-text">Schedule conflict detected!</div>
+                    </div>
+
+                    <!-- Timeline Filter Tabs -->
+                    <div class="routine-toolbar">
+                        <div class="category-tabs" id="routine-category-tabs">
+                            <button class="cat-tab active" data-cat="">All</button>
+                            <button class="cat-tab" data-cat="coding">Coding</button>
+                            <button class="cat-tab" data-cat="study">Study</button>
+                            <button class="cat-tab" data-cat="fitness">Fitness</button>
+                            <button class="cat-tab" data-cat="college">College</button>
+                            <button class="cat-tab" data-cat="routine">Routine</button>
+                            <button class="cat-tab" data-cat="personal">Personal</button>
+                        </div>
+                    </div>
+
+                    <!-- Chronological Timeline Activities List -->
+                    <div class="routine-timeline" id="routine-timeline">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 5: Email Intelligence & Communications (Phase 8) -->
+            <div id="view-email" class="view-panel">
+                <div class="email-dashboard">
+                    <!-- Email Header Card -->
+                    <div class="email-header-card">
+                        <div class="email-header-info">
+                            <h2>Email Intelligence & Communications</h2>
+                            <p>Official Google OAuth, untrusted input defenses, deadline detection, and approval-controlled drafts.</p>
+                        </div>
+                        <div class="email-header-actions">
+                            <div class="oauth-status-pill" id="email-oauth-pill">
+                                <span class="status-dot dot-checking" id="email-oauth-dot"></span>
+                                <span id="email-oauth-text">Checking account...</span>
+                            </div>
+                            <button id="btn-email-auth-action" class="btn-sm btn-outline">Connect Gmail</button>
+                            <button id="btn-email-briefing" class="btn-sm btn-outline">Inbox Briefing</button>
+                            <button id="btn-email-deadlines-filter" class="btn-sm btn-primary">Check Deadlines</button>
+                        </div>
+                    </div>
+
+                    <!-- Email Metrics Ribbon -->
+                    <div class="email-stats-ribbon">
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-email-unread">0</div>
+                            <div class="stat-label">Unread Emails</div>
+                            <div class="stat-sub">Awaiting your attention</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-email-urgent">0</div>
+                            <div class="stat-label">Urgent Messages</div>
+                            <div class="stat-sub">High priority flagged</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-email-deadlines">0</div>
+                            <div class="stat-label">Detected Deadlines</div>
+                            <div class="stat-sub">Assignments & milestones</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-email-replies">0</div>
+                            <div class="stat-label">Requires Reply</div>
+                            <div class="stat-sub">Direct questions found</div>
+                        </div>
+                    </div>
+
+                    <!-- Security Alert Banner (Prompt Injection Defense) -->
+                    <div class="email-security-banner">
+                        <span class="security-badge">🛡️ PROMPT-INJECTION SHIELD ACTIVE</span>
+                        <span>External email bodies are isolated and treated as passive data. Embedded instructions to override assistant behavior or leak memories are strictly neutralized.</span>
+                    </div>
+
+                    <!-- Email Search & Filter Toolbar -->
+                    <div class="email-toolbar">
+                        <div class="category-tabs" id="email-category-tabs">
+                            <button class="cat-tab active" data-cat="">All</button>
+                            <button class="cat-tab" data-cat="important">Important</button>
+                            <button class="cat-tab" data-cat="college">College</button>
+                            <button class="cat-tab" data-cat="work">Work / Code</button>
+                            <button class="cat-tab" data-cat="urgent">Urgent</button>
+                            <button class="cat-tab" data-cat="requires_response">Needs Reply</button>
+                            <button class="cat-tab" data-cat="promotions">Promos</button>
+                        </div>
+                        <div class="email-search-wrapper">
+                            <input type="text" id="email-search-input" placeholder="Search emails by sender, subject, or keyword..." class="email-search-input">
+                        </div>
+                    </div>
+
+                    <!-- Email Messages List -->
+                    <div class="email-messages-list" id="email-messages-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 6: Project Intelligence & GitHub Telemetry (Phase 9) -->
+            <div id="view-projects" class="view-panel">
+                <div class="projects-dashboard">
+                    <!-- Projects Header Card -->
+                    <div class="projects-header-card">
+                        <div class="projects-header-info">
+                            <h2>Project Intelligence & GitHub Telemetry</h2>
+                            <p>Monitor software repositories, milestone velocity, pull requests, and detect inactive codebases.</p>
+                        </div>
+                        <div class="projects-header-actions">
+                            <button id="btn-sync-github" class="btn-sm btn-outline">Sync GitHub</button>
+                            <button id="btn-inactivity-audit" class="btn-sm btn-outline">Inactivity Audit</button>
+                            <button id="btn-add-project" class="btn-sm btn-primary">+ Add Project</button>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Ribbon -->
+                    <div class="projects-stats-ribbon">
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-proj-active">0</div>
+                            <div class="stat-label">Active Projects</div>
+                            <div class="stat-sub">Under active engineering</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-proj-milestones">0%</div>
+                            <div class="stat-label">Overall Velocity</div>
+                            <div class="stat-sub">Milestone completion rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-proj-deadlines">0</div>
+                            <div class="stat-label">Upcoming Deadlines</div>
+                            <div class="stat-sub">Within next 14 days</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-proj-inactive">0</div>
+                            <div class="stat-label">Inactive Projects</div>
+                            <div class="stat-sub">No commits in &gt; 7 days</div>
+                        </div>
+                    </div>
+
+                    <!-- Inactivity Alert Banner (populated dynamically) -->
+                    <div id="projects-inactivity-banner" class="inactivity-banner" style="display: none;">
+                        <span class="inactivity-icon">⚠️</span>
+                        <span id="inactivity-banner-text">Stale project detected!</span>
+                    </div>
+
+                    <!-- Main Grid: Projects List + GitHub Telemetry -->
+                    <div class="projects-main-layout">
+                        <!-- Left Column: Tracked Projects -->
+                        <div class="projects-column-left">
+                            <div class="column-header-row">
+                                <h3>Tracked Engineering Projects</h3>
+                                <div class="category-tabs" id="project-status-tabs">
+                                    <button class="cat-tab active" data-status="">All</button>
+                                    <button class="cat-tab" data-status="active">Active</button>
+                                    <button class="cat-tab" data-status="on_hold">On Hold</button>
+                                    <button class="cat-tab" data-status="completed">Done</button>
+                                </div>
+                            </div>
+                            <div class="projects-list-container" id="projects-list-container">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Right Column: GitHub Telemetry Stream -->
+                        <div class="projects-column-right">
+                            <div class="telemetry-card">
+                                <div class="telemetry-header">
+                                    <div class="telemetry-title-group">
+                                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                                        <h4 id="github-repo-label">nous-assistant/core</h4>
+                                    </div>
+                                    <span class="telemetry-sync-badge" id="github-sync-time">Synced</span>
+                                </div>
+
+                                <!-- Commits Section -->
+                                <div class="telemetry-section">
+                                    <h5>Recent Commits</h5>
+                                    <div class="telemetry-list" id="github-commits-list">
+                                        <!-- Commits populated dynamically -->
+                                    </div>
+                                </div>
+
+                                <!-- Pull Requests Section -->
+                                <div class="telemetry-section">
+                                    <h5>Open Pull Requests</h5>
+                                    <div class="telemetry-list" id="github-prs-list">
+                                        <!-- PRs populated dynamically -->
+                                    </div>
+                                </div>
+
+                                <!-- Issues Section -->
+                                <div class="telemetry-section">
+                                    <h5>Active Issues</h5>
+                                    <div class="telemetry-list" id="github-issues-list">
+                                        <!-- Issues populated dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 7: Financial Market Intelligence & Causal Reasoning (Phase 10 & 11) -->
+            <div id="view-market" class="view-panel">
+                <div class="market-dashboard">
+                    <!-- Market Header Card -->
+                    <div class="market-header-card">
+                        <div class="market-header-info">
+                            <h2>Live Market Intelligence & Causal Reasoning</h2>
+                            <p>Real-time Indian (NSE/BSE) & Global benchmark tracking, institutional liquidity telemetry, and evidence-based causal analysis.</p>
+                            <div class="market-session-pills">
+                                <span class="session-pill session-open" id="session-pill-nse">NSE: Open</span>
+                                <span class="session-pill session-closed" id="session-pill-us">US: Closed</span>
+                                <span class="session-pill session-provider" id="session-pill-provider">Yahoo Real-Time / Fallback</span>
+                            </div>
+                        </div>
+                        <div class="market-header-actions">
+                            <button id="btn-refresh-market" class="btn-sm btn-outline">Refresh Quotes</button>
+                            <button id="btn-quick-analyze-nifty" class="btn-sm btn-outline">Investigate NIFTY 50</button>
+                            <button id="btn-open-alert-modal" class="btn-sm btn-primary">+ Set Alert</button>
+                        </div>
+                    </div>
+
+                    <!-- Institutional Liquidity & Sentiment Banner -->
+                    <div class="fii-dii-banner" id="fii-dii-banner">
+                        <div class="fii-dii-stat">
+                            <span class="fii-dii-label">FII / FPI Net Flow</span>
+                            <span class="fii-dii-val text-danger" id="fii-net-val">-1,275.3 Cr</span>
+                        </div>
+                        <div class="fii-dii-stat">
+                            <span class="fii-dii-label">DII Net Flow</span>
+                            <span class="fii-dii-val text-success" id="dii-net-val">+3,110.7 Cr</span>
+                        </div>
+                        <div class="fii-dii-stat">
+                            <span class="fii-dii-label">Net Institutional</span>
+                            <span class="fii-dii-val text-success" id="net-inst-val">+1,835.4 Cr</span>
+                        </div>
+                        <div class="fii-dii-stat fii-dii-sentiment">
+                            <span class="fii-dii-label">Institutional Sentiment</span>
+                            <span class="fii-dii-sentiment-badge" id="inst-sentiment-badge">DII Absorption (Support)</span>
+                        </div>
+                    </div>
+
+                    <!-- Benchmark Indices Grid -->
+                    <div class="market-indices-grid" id="market-indices-grid">
+                        <!-- Populated dynamically: NIFTY 50 (Hero Card), SENSEX, BANK NIFTY, NASDAQ, S&P 500, USD/INR, Crude -->
+                    </div>
+
+                    <!-- Two-Column Workspace: Watchlist vs Alerts & Causal Analysis -->
+                    <div class="market-workspace-layout">
+                        <!-- Left Column: Personal Watchlist -->
+                        <div class="market-col-watchlist">
+                            <div class="card-panel">
+                                <div class="card-panel-header">
+                                    <div class="card-title-group">
+                                        <h3>Personal Watchlist</h3>
+                                        <span class="panel-subtitle">Monitored Indian equities & international assets</span>
+                                    </div>
+                                    <div class="watchlist-add-inline">
+                                        <input type="text" id="watchlist-new-sym" placeholder="Symbol (e.g. INFY.NS)" class="input-inline">
+                                        <input type="text" id="watchlist-new-name" placeholder="Name" class="input-inline">
+                                        <select id="watchlist-new-market" class="input-inline select-inline">
+                                            <option value="NSE">NSE</option>
+                                            <option value="BSE">BSE</option>
+                                            <option value="US">US</option>
+                                            <option value="COMMODITY">COMMODITY</option>
+                                            <option value="FX">FX</option>
+                                        </select>
+                                        <button id="btn-add-watchlist-inline" class="btn-sm btn-primary">+ Add</button>
+                                    </div>
+                                </div>
+                                <div class="watchlist-table-wrapper">
+                                    <table class="watchlist-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Instrument</th>
+                                                <th>Price</th>
+                                                <th>Change</th>
+                                                <th>Day High / Low</th>
+                                                <th>Volume</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="watchlist-tbody">
+                                            <!-- Dynamically populated rows -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Alerts & Quick Reasoning Trigger -->
+                        <div class="market-col-alerts">
+                            <!-- Quick Causal Analysis Trigger -->
+                            <div class="card-panel">
+                                <div class="card-panel-header">
+                                    <div class="card-title-group">
+                                        <h3>Investigate Market Movement</h3>
+                                        <span class="panel-subtitle">Phase 11 Causal Reasoning & Evidence Engine</span>
+                                    </div>
+                                </div>
+                                <div class="reasoning-quick-card">
+                                    <p class="quick-reasoning-desc">
+                                        Select any instrument to investigate verified catalysts across global cues, macro prints, sector rotation, and news timestamps.
+                                    </p>
+                                    <div class="reasoning-input-group">
+                                        <select id="select-reasoning-symbol" class="form-control">
+                                            <option value="^NSEI">NIFTY 50 (^NSEI)</option>
+                                            <option value="^BSESN">S&P BSE SENSEX (^BSESN)</option>
+                                            <option value="^NSEBANK">NIFTY Bank (^NSEBANK)</option>
+                                            <option value="RELIANCE.NS">Reliance Industries (RELIANCE.NS)</option>
+                                            <option value="TCS.NS">TCS (TCS.NS)</option>
+                                            <option value="HDFCBANK.NS">HDFC Bank (HDFCBANK.NS)</option>
+                                            <option value="^IXIC">NASDAQ Composite (^IXIC)</option>
+                                        </select>
+                                        <button id="btn-trigger-reasoning" class="btn-sm btn-primary">Investigate Why</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Active Market Alerts Panel -->
+                            <div class="card-panel">
+                                <div class="card-panel-header">
+                                    <div class="card-title-group">
+                                        <h3>Configured Alerts</h3>
+                                        <span class="panel-subtitle">Threshold and percentage triggers</span>
+                                    </div>
+                                    <button id="btn-new-alert-side" class="btn-sm btn-outline">+ Alert</button>
+                                </div>
+                                <div class="alerts-list" id="market-alerts-list">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Regulatory & Anti-Hallucination Disclaimer Banner -->
+                            <div class="market-disclaimer-card">
+                                <div class="disclaimer-icon">🛡️</div>
+                                <div class="disclaimer-text">
+                                    <strong>Educational & Analytical AI Only:</strong> NOUS evaluates market telemetry and published reports. NOUS does not execute trades, provide financial advisory, or guarantee price trajectory.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 8: Web Research Engine & Persistent Notebook (Phase 12) -->
+            <div id="view-research" class="view-panel">
+                <div class="research-dashboard">
+                    <!-- Research Header Card -->
+                    <div class="research-header-card">
+                        <div class="research-header-info">
+                            <h2>Web Research Engine & Knowledge Notebook</h2>
+                            <p>Multi-source synthesis across DuckDuckGo, Wikipedia, and News. Delivers 8-part evidence-backed debriefs with persistent notebook storage.</p>
+                        </div>
+                        <div class="research-header-actions">
+                            <button id="btn-open-new-note-modal" class="btn-sm btn-outline">+ Manual Note</button>
+                            <button id="btn-clear-research-view" class="btn-sm btn-ghost">Clear</button>
+                        </div>
+                    </div>
+
+                    <!-- Research Search & Investigation Bar -->
+                    <div class="research-search-panel">
+                        <div class="research-input-wrapper">
+                            <input type="text" id="research-query-input" placeholder="Enter research question, technology, company, or concept (e.g. Raft consensus algorithm, FastAPI benchmarks)..." class="research-query-input">
+                            <select id="research-category-select" class="form-control select-category-inline">
+                                <option value="technology">Technology & Code</option>
+                                <option value="company">Company & Industry</option>
+                                <option value="academic">Academic & Science</option>
+                                <option value="market">Financial & Market</option>
+                                <option value="general">General Topic</option>
+                            </select>
+                        </div>
+                        <div class="research-actions-row">
+                            <div class="research-buttons-group">
+                                <button id="btn-run-deep-research" class="btn-sm btn-primary">
+                                    🔬 Deep Research (8-Part Report)
+                                </button>
+                                <button id="btn-run-fast-search" class="btn-sm btn-outline">
+                                    🔍 Fast Web Search
+                                </button>
+                            </div>
+                            <div class="research-autosave-toggle">
+                                <label for="check-autosave-report" class="checkbox-label">
+                                    <input type="checkbox" id="check-autosave-report" checked>
+                                    Auto-save report to notebook
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Two-Column Workspace: Active Report Viewer vs. Notebook Drawer -->
+                    <div class="research-workspace-layout">
+                        <!-- Left Column: Active Report Viewer -->
+                        <div class="research-col-viewer">
+                            <div class="card-panel research-viewer-card">
+                                <div class="card-panel-header">
+                                    <div class="card-title-group">
+                                        <h3 id="research-viewer-title">Research Debrief & Investigation</h3>
+                                        <span class="panel-subtitle" id="research-viewer-subtitle">Ready to investigate topics with primary sources</span>
+                                    </div>
+                                    <div class="viewer-actions">
+                                        <button id="btn-save-current-report" class="btn-sm btn-outline" style="display: none;">Save to Notebook</button>
+                                    </div>
+                                </div>
+                                <div class="research-report-content" id="research-report-content">
+                                    <!-- Populated dynamically or empty state -->
+                                    <div class="research-empty-state">
+                                        <div class="empty-icon">🌐</div>
+                                        <h4>Explore & Synthesize Knowledge</h4>
+                                        <p>Enter any research topic above to generate a comprehensive 8-section evidence-backed report with verified references, opposing viewpoints, and dates.</p>
+                                        <div class="research-suggested-prompts">
+                                            <button class="suggested-tag-btn" data-query="Raft consensus algorithm safety proofs" data-cat="technology">Raft Consensus Algorithm</button>
+                                            <button class="suggested-tag-btn" data-query="FastAPI asynchronous architecture benchmarks" data-cat="technology">FastAPI Performance</button>
+                                            <button class="suggested-tag-btn" data-query="Quantum computing advantage and surface codes" data-cat="academic">Quantum Advantage</button>
+                                            <button class="suggested-tag-btn" data-query="Transformer self-attention mechanisms" data-cat="technology">Transformer Architecture</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Persistent Notebook Drawer -->
+                        <div class="research-col-notebook">
+                            <div class="card-panel research-notebook-card">
+                                <div class="card-panel-header">
+                                    <div class="card-title-group">
+                                        <h3>Knowledge Notebook</h3>
+                                        <span class="panel-subtitle">Saved research reports & technical notes</span>
+                                    </div>
+                                </div>
+
+                                <!-- Notebook Search & Filter -->
+                                <div class="notebook-filter-bar">
+                                    <input type="text" id="notebook-search-input" placeholder="Search saved notes..." class="notebook-search-input">
+                                    <div class="category-tabs notebook-cat-tabs" id="notebook-category-tabs">
+                                        <button class="cat-tab active" data-cat="">All</button>
+                                        <button class="cat-tab" data-cat="technology">Tech</button>
+                                        <button class="cat-tab" data-cat="academic">Academic</button>
+                                        <button class="cat-tab" data-cat="company">Company</button>
+                                        <button class="cat-tab" data-cat="market">Market</button>
+                                    </div>
+                                </div>
+
+                                <!-- Notes List Container -->
+                                <div class="research-notes-list" id="research-notes-list">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 9: Computer & Task Automation (Phase 13) -->
+            <div id="view-automation" class="view-panel">
+                <div class="automation-dashboard">
+                    <!-- Automation Header -->
+                    <div class="automation-header-card">
+                        <div class="automation-header-info">
+                            <h2>Computer & Task Automation Engine</h2>
+                            <p>Authorized workspace file management, sandboxed shell execution with human-in-the-loop gates, and background job scheduling.</p>
+                        </div>
+                        <div class="automation-header-actions">
+                            <button id="btn-open-new-file-modal" class="btn-sm btn-outline">+ New File</button>
+                            <button id="btn-open-new-task-modal" class="btn-sm btn-primary">+ Schedule Task</button>
+                            <button id="btn-refresh-automation" class="btn-sm btn-ghost">Refresh</button>
+                        </div>
+                    </div>
+
+                    <!-- 3-Column / Grid Layout: Files, Console, and Scheduled Tasks -->
+                    <div class="automation-grid-layout">
+                        <!-- Left Panel: Workspace File Explorer -->
+                        <div class="card-panel automation-col-files">
+                            <div class="card-panel-header">
+                                <div class="card-title-group">
+                                    <h3>Workspace Files</h3>
+                                    <span class="panel-subtitle" id="workspace-root-label">Root: /workspace</span>
+                                </div>
+                            </div>
+                            <div class="workspace-files-toolbar">
+                                <span class="workspace-breadcrumb">📁 workspace/</span>
+                                <button id="btn-reload-files" class="btn-xs btn-ghost" title="Reload files">↻</button>
+                            </div>
+                            <div class="workspace-files-list" id="workspace-files-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Center Panel: Controlled Shell Terminal & Approval Gate -->
+                        <div class="card-panel automation-col-console">
+                            <div class="card-panel-header">
+                                <div class="card-title-group">
+                                    <h3>Safe Terminal Console</h3>
+                                    <span class="panel-subtitle">Blocklist-protected shell with approval gates</span>
+                                </div>
+                            </div>
+
+                            <!-- Human In The Loop Approval Box (Shown when a command is gated) -->
+                            <div id="approval-box" class="approval-card" style="display: none;">
+                                <div class="approval-header">
+                                    <span class="approval-badge">⚠️ APPROVAL REQUIRED</span>
+                                    <span class="approval-token" id="approval-token-label">Token: ...</span>
+                                </div>
+                                <p class="approval-desc" id="approval-reason-text">This command modifies files or runs external processes.</p>
+                                <div class="approval-cmd-preview" id="approval-cmd-preview">command</div>
+                                <div class="approval-actions">
+                                    <button id="btn-confirm-approval" class="btn-sm btn-primary">✓ Confirm & Execute</button>
+                                    <button id="btn-cancel-approval" class="btn-sm btn-ghost">Cancel</button>
+                                </div>
+                            </div>
+
+                            <!-- Terminal Window -->
+                            <div class="terminal-screen" id="terminal-screen">
+                                <div class="terminal-line terminal-system">NOUS Sandboxed Terminal Console v1.0 [Windows 11]</div>
+                                <div class="terminal-line terminal-system">Type 'dir', 'git status', 'python --version' or state-modifying tasks.</div>
+                                <div class="terminal-line terminal-prompt">C:\workspace&gt; <span class="terminal-cursor">_</span></div>
+                            </div>
+
+                            <!-- Console Input Bar -->
+                            <div class="console-input-bar">
+                                <span class="console-prompt-symbol">&gt;</span>
+                                <input type="text" id="console-command-input" placeholder="Enter shell command (e.g. dir, git status, python test.py)..." class="console-command-input">
+                                <button id="btn-run-console-command" class="btn-sm btn-primary">Run</button>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Scheduled Background Automations -->
+                        <div class="card-panel automation-col-tasks">
+                            <div class="card-panel-header">
+                                <div class="card-title-group">
+                                    <h3>Scheduled Automations</h3>
+                                    <span class="panel-subtitle">Recurring jobs & execution history</span>
+                                </div>
+                            </div>
+
+                            <div class="tasks-subtabs">
+                                <button class="task-tab active" id="tab-btn-scheduled" data-tab="scheduled">Scheduled Jobs</button>
+                                <button class="task-tab" id="tab-btn-history" data-tab="history">Audit History</button>
+                            </div>
+
+                            <div class="scheduled-tasks-list" id="scheduled-tasks-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                            <div class="execution-history-list" id="execution-history-list" style="display: none;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- VIEW: SECURITY VAULT & PRIVACY CONTROLS (PHASE 14) -->
+            <!-- ========================================== -->
+            <div class="view-panel" id="view-security">
+                <div class="dashboard-header">
+                    <div>
+                        <h2 class="dashboard-title">Security Vault & Privacy Controls</h2>
+                        <p class="dashboard-subtitle">Zero-Trust Credential Masking, Offline Lockdown & Immutable Audit Trail</p>
+                    </div>
+                    <div class="security-header-actions">
+                        <button id="btn-export-security-data" class="btn-sm btn-outline">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Export Privacy Data
+                        </button>
+                        <button id="btn-purge-security-data" class="btn-sm btn-outline btn-danger-outline">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            Purge Transient Data
+                        </button>
+                        <button id="btn-refresh-audit-trail" class="btn-sm btn-ghost">↻ Refresh</button>
+                    </div>
+                </div>
+
+                <!-- 3-Column Grid Layout: Privacy Policies, Live Redactor Sandbox, and Immutable Audit Trail -->
+                <div class="security-grid-layout">
+                    <!-- Left Panel: Privacy Policies & Lockdown Switches -->
+                    <div class="card-panel security-col-policies">
+                        <div class="card-panel-header">
+                            <div class="card-title-group">
+                                <h3>Privacy & Security Switches</h3>
+                                <span class="panel-subtitle">Instant enforcement across all models & tools</span>
+                            </div>
+                        </div>
+
+                        <div class="security-switches-list">
+                            <!-- Switch 1: Offline Lockdown -->
+                            <div class="security-switch-card" id="card-lockdown-status">
+                                <div class="switch-card-info">
+                                    <div class="switch-title-row">
+                                        <span class="switch-title">Offline Lockdown</span>
+                                        <span class="status-pill pill-neutral" id="pill-lockdown-status">INACTIVE</span>
+                                    </div>
+                                    <p class="switch-desc">Forces 100% local execution on Ollama. Blocks all cloud LLM API requests and external telemetry.</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-offline-lockdown">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <!-- Switch 2: Memory Retention Pause -->
+                            <div class="security-switch-card">
+                                <div class="switch-card-info">
+                                    <div class="switch-title-row">
+                                        <span class="switch-title">Pause Memory Retention</span>
+                                        <span class="status-pill pill-green" id="pill-memory-retention-status">RECORDING</span>
+                                    </div>
+                                    <p class="switch-desc">Temporarily freeze long-term memory updates during sensitive or confidential coding sessions.</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-pause-memory">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <!-- Switch 3: Strict Sensitive Data Redaction -->
+                            <div class="security-switch-card">
+                                <div class="switch-card-info">
+                                    <div class="switch-title-row">
+                                        <span class="switch-title">Strict Credential Scrubbing</span>
+                                        <span class="status-pill pill-cyan" id="pill-redaction-status">ACTIVE</span>
+                                    </div>
+                                    <p class="switch-desc">Automatically scrub API keys (OpenAI, Google, GitHub), JWTs, credit cards, and passwords before AI inference.</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-strict-redaction" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <!-- Switch 4: Auto-Approve Medium Risk Tools -->
+                            <div class="security-switch-card">
+                                <div class="switch-card-info">
+                                    <div class="switch-title-row">
+                                        <span class="switch-title">Auto-Approve Medium Risk</span>
+                                    </div>
+                                    <p class="switch-desc">Allow file writes and read-only searches to proceed without explicit user confirmation prompts.</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-auto-medium">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Vault Diagnostics Box -->
+                        <div class="vault-info-box">
+                            <div class="vault-info-title">VAULT TELEMETRY</div>
+                            <div class="vault-info-row">
+                                <span class="v-label">Database:</span>
+                                <span class="v-val">nous_security.db (WAL)</span>
+                            </div>
+                            <div class="vault-info-row">
+                                <span class="v-label">Encryption:</span>
+                                <span class="v-val">Zero-Trust Regex / SQLite WAL</span>
+                            </div>
+                            <div class="vault-info-row">
+                                <span class="v-label">Protection Mode:</span>
+                                <span class="v-val" id="vault-mode-label">Hybrid Guarded</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Center Panel: Sensitive Data Redactor Live Sandbox -->
+                    <div class="card-panel security-col-redactor">
+                        <div class="card-panel-header">
+                            <div class="card-title-group">
+                                <h3>Data Redactor Sandbox</h3>
+                                <span class="panel-subtitle">Test credential detection and redaction live</span>
+                            </div>
+                        </div>
+
+                        <div class="redactor-sandbox-form">
+                            <div class="form-group">
+                                <label for="redactor-test-input">Sample Input (Paste credentials, keys, or tokens)</label>
+                                <textarea id="redactor-test-input" class="form-control" rows="5" placeholder="Try pasting:
+My OpenAI key is sk-12345678901234567890123456
+Google key: AIzaSyD9876543210123456789012345678901
+GitHub: ghp_1234567890abcdefghijklmnopqrstuvwxyz
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+                            </div>
+
+                            <div class="redactor-actions">
+                                <button id="btn-run-sanitize-test" class="btn-sm btn-primary">⚡ Sanitize & Redact</button>
+                                <button id="btn-insert-sample-secrets" class="btn-sm btn-ghost">Insert Sample Secrets</button>
+                            </div>
+
+                            <div class="redactor-output-group">
+                                <div class="redactor-output-header">
+                                    <label>Sanitized Output (What NOUS sends to LLMs & logs)</label>
+                                    <span id="redactor-badge-result" class="badge-secrets-clean">AWAITING INPUT</span>
+                                </div>
+                                <div class="redactor-output-display" id="redactor-output-display">
+                                    <span class="placeholder-text">Click &quot;Sanitize &amp; Redact&quot; or insert sample secrets to view masked output...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Immutable Security Audit Trail -->
+                    <div class="card-panel security-col-audit">
+                        <div class="card-panel-header">
+                            <div class="card-title-group">
+                                <h3>Security Audit Trail</h3>
+                                <span class="panel-subtitle" id="audit-trail-count">0 events recorded</span>
+                            </div>
+                        </div>
+
+                        <div class="audit-toolbar">
+                            <input type="text" id="audit-search-input" class="form-control form-control-sm" placeholder="Search audit logs (tool, command, user)...">
+                            <select id="audit-filter-type" class="form-control form-control-sm">
+                                <option value="">All Events</option>
+                                <option value="tool_execution">Tool Execution</option>
+                                <option value="command_execution">Command Execution</option>
+                                <option value="privacy_change">Privacy Change</option>
+                                <option value="artifact_purge">Artifact Purge</option>
+                            </select>
+                        </div>
+
+                        <div class="audit-events-list" id="audit-events-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Adding / Editing Memories -->
+    <div id="memory-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-title">Add New Memory</h3>
+                <button id="btn-close-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-memory-id">
+                <div class="form-group">
+                    <label for="mem-category">Category</label>
+                    <select id="mem-category" class="form-control">
+                        <option value="user_profile">User Profile (Name, Goals, Style)</option>
+                        <option value="personal_info">Personal Info (Preferences, Dates)</option>
+                        <option value="project">Project (Tech stack, Milestones)</option>
+                        <option value="routine">Routine (Schedule, Habits)</option>
+                        <option value="conversation">Conversation (Decisions, Context)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mem-key">Key / Identifier</label>
+                    <input type="text" id="mem-key" class="form-control" placeholder="e.g. preferred_name, study_schedule, project_tech">
+                </div>
+                <div class="form-group">
+                    <label for="mem-content">Content / Information</label>
+                    <textarea id="mem-content" class="form-control" rows="4" placeholder="Enter the exact fact or information to remember..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-modal" class="btn-sm btn-ghost">Cancel</button>
+                <button id="btn-save-memory" class="btn-sm btn-primary">Save Memory</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding / Editing Activities -->
+    <div id="activity-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="act-modal-title">Add New Activity</h3>
+                <button id="btn-close-act-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-act-id">
+                <div class="form-group">
+                    <label for="act-name">Activity Name</label>
+                    <input type="text" id="act-name" class="form-control" placeholder="e.g. LeetCode Practice, Gym, Walking, College Lecture">
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="act-start-time">Start Time (HH:MM)</label>
+                        <input type="time" id="act-start-time" class="form-control" value="09:00">
+                    </div>
+                    <div class="form-group">
+                        <label for="act-end-time">End Time (HH:MM)</label>
+                        <input type="time" id="act-end-time" class="form-control" value="10:00">
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="act-category">Category</label>
+                        <select id="act-category" class="form-control">
+                            <option value="routine">Routine</option>
+                            <option value="coding">Coding & Development</option>
+                            <option value="study">Study & Revision</option>
+                            <option value="fitness">Fitness & Gym</option>
+                            <option value="college">College / Classes</option>
+                            <option value="personal">Personal</option>
+                            <option value="sleep">Sleep</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="act-priority">Priority</label>
+                        <select id="act-priority" class="form-control">
+                            <option value="medium">Medium Priority</option>
+                            <option value="high">High Priority</option>
+                            <option value="low">Low Priority</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="act-notes">Notes / Details</label>
+                    <textarea id="act-notes" class="form-control" rows="2" placeholder="Optional notes, chapters, problem sets..."></textarea>
+                </div>
+                <div class="form-group toggle-item">
+                    <label for="act-fixed">Fixed Commitment (cannot be auto-rescheduled):</label>
+                    <input type="checkbox" id="act-fixed" class="toggle-checkbox">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-act-modal" class="btn-sm btn-ghost">Cancel</button>
+                <button id="btn-save-activity" class="btn-sm btn-primary">Save Activity</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Evening Daily Review -->
+    <div id="review-modal" class="modal-backdrop">
+        <div class="modal-card modal-card-lg">
+            <div class="modal-header">
+                <h3 id="review-modal-title">Evening Daily Review & Debrief</h3>
+                <button id="btn-close-review-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body" id="review-modal-body">
+                <!-- Dynamically populated review content -->
+            </div>
+            <div class="modal-footer">
+                <button id="btn-close-review-footer" class="btn-sm btn-primary">Close Debrief</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Email Detail & Security View -->
+    <div id="email-detail-modal" class="modal-backdrop">
+        <div class="modal-card modal-card-lg">
+            <div class="modal-header">
+                <h3 id="email-modal-subject">Email Details</h3>
+                <button id="btn-close-email-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body" id="email-modal-body">
+                <!-- Dynamically populated email details -->
+            </div>
+            <div class="modal-footer">
+                <button id="btn-close-email-footer" class="btn-sm btn-ghost">Close</button>
+                <button id="btn-open-draft-from-detail" class="btn-sm btn-primary">Draft Reply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Drafting & Approving Replies (Human-In-The-Loop) -->
+    <div id="email-draft-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Draft Email Reply</h3>
+                <button id="btn-close-draft-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="draft-reply-to-id">
+                <div class="form-group">
+                    <label for="draft-to">Recipient</label>
+                    <input type="text" id="draft-to" class="form-control" placeholder="recipient@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="draft-subject">Subject</label>
+                    <input type="text" id="draft-subject" class="form-control" placeholder="Re: ...">
+                </div>
+                <div class="form-group">
+                    <label for="draft-body">Reply Content</label>
+                    <textarea id="draft-body" class="form-control" rows="6" placeholder="Type your response..."></textarea>
+                </div>
+                <div class="form-group toggle-item" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px 14px; border-radius: var(--radius-sm);">
+                    <label for="draft-confirm-check" style="color: #fca5a5; font-weight: 600;">
+                        Strict Approval: I confirm and authorize NOUS to send this email.
+                    </label>
+                    <input type="checkbox" id="draft-confirm-check" class="toggle-checkbox">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-draft" class="btn-sm btn-ghost">Cancel</button>
+                <button id="btn-save-draft-only" class="btn-sm btn-outline">Save Draft Only</button>
+                <button id="btn-send-draft" class="btn-sm btn-primary" style="background: #10b981; border-color: #10b981;">Approve & Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Daily Inbox Briefing -->
+    <div id="email-briefing-modal" class="modal-backdrop">
+        <div class="modal-card modal-card-lg">
+            <div class="modal-header">
+                <h3>Executive Inbox Briefing</h3>
+                <button id="btn-close-briefing-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body" id="email-briefing-body">
+                <!-- Dynamically populated briefing -->
+            </div>
+            <div class="modal-footer">
+                <button id="btn-close-briefing-footer" class="btn-sm btn-primary">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding / Editing Projects -->
+    <div id="project-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="project-modal-title">Add New Project</h3>
+                <button id="btn-close-project-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-proj-id">
+                <div class="form-group">
+                    <label for="proj-name">Project Name</label>
+                    <input type="text" id="proj-name" class="form-control" placeholder="e.g. Raft Consensus Engine, NOUS Assistant">
+                </div>
+                <div class="form-group">
+                    <label for="proj-description">Description</label>
+                    <textarea id="proj-description" class="form-control" rows="2" placeholder="Brief explanation of technical objectives..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="proj-tech-stack">Tech Stack / Technologies</label>
+                    <input type="text" id="proj-tech-stack" class="form-control" placeholder="e.g. Python, FastAPI, Docker, SQLite">
+                </div>
+                <div class="form-group">
+                    <label for="proj-repo-url">Repository URL / Slug</label>
+                    <input type="text" id="proj-repo-url" class="form-control" placeholder="https://github.com/owner/repo or owner/repo">
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="proj-deadline">Target Deadline</label>
+                        <input type="date" id="proj-deadline" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="proj-priority">Priority</label>
+                        <select id="proj-priority" class="form-control">
+                            <option value="medium">Medium Priority</option>
+                            <option value="high">High Priority</option>
+                            <option value="low">Low Priority</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="proj-status">Lifecycle Status</label>
+                    <select id="proj-status" class="form-control">
+                        <option value="active">Active Development</option>
+                        <option value="planning">Planning</option>
+                        <option value="on_hold">On Hold</option>
+                        <option value="completed">Completed</option>
+                        <option value="archived">Archived</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-project-modal" class="btn-sm btn-ghost">Cancel</button>
+                <button id="btn-save-project" class="btn-sm btn-primary">Save Project</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Milestone -->
+    <div id="milestone-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Add Project Milestone</h3>
+                <button id="btn-close-milestone-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="milestone-proj-id">
+                <div class="form-group">
+                    <label for="milestone-title">Milestone Title</label>
+                    <input type="text" id="milestone-title" class="form-control" placeholder="e.g. Phase 9: Project Intelligence & GitHub Telemetry">
+                </div>
+                <div class="form-group">
+                    <label for="milestone-due-date">Due Date</label>
+                    <input type="date" id="milestone-due-date" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="milestone-notes">Notes / Requirements</label>
+                    <textarea id="milestone-notes" class="form-control" rows="2" placeholder="Optional acceptance criteria..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-milestone" class="btn-sm btn-ghost">Cancel</button>
+                <button id="btn-save-milestone" class="btn-sm btn-primary">Add Milestone</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Inactivity Audit -->
+    <div id="inactivity-audit-modal" class="modal-backdrop">
+        <div class="modal-card modal-card-lg">
+            <div class="modal-header">
+                <h3>Proactive Inactivity & Stale Codebase Audit</h3>
+                <button id="btn-close-audit-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body" id="inactivity-audit-body">
+                <!-- Dynamically populated -->
+            </div>
+            <div class="modal-footer">
+                <button id="btn-close-audit-footer" class="btn-sm btn-primary">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Market Causal Reasoning Debrief (Phase 11) -->
+    <div id="market-reasoning-modal" class="modal-backdrop">
+        <div class="modal-card modal-card-lg">
+            <div class="modal-header">
+                <h3 id="reasoning-modal-title">Market Movement Investigation</h3>
+                <button id="btn-close-reasoning-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body" id="market-reasoning-body">
+                <!-- Populated dynamically with evidence-based causal analysis -->
+            </div>
+            <div class="modal-footer">
+                <button id="btn-close-reasoning-footer" class="btn-sm btn-primary">Close Debrief</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Creating Market Alerts -->
+    <div id="market-alert-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Set Market Price Alert</h3>
+                <button id="btn-close-alert-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="alert-symbol">Instrument Symbol</label>
+                    <input type="text" id="alert-symbol" class="form-control" placeholder="e.g. ^NSEI, RELIANCE.NS, TCS.NS">
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="alert-condition">Condition</label>
+                        <select id="alert-condition" class="form-control">
+                            <option value="above">Price Crosses Above (&ge;)</option>
+                            <option value="below">Price Crosses Below (&le;)</option>
+                            <option value="pct_up">Percentage Surge (&ge; +%)</option>
+                            <option value="pct_down">Percentage Drop (&le; -%)</option>
+                            <option value="volume_surge">Volume Surge (&ge;)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="alert-target-value">Target Threshold</label>
+                        <input type="number" step="any" id="alert-target-value" class="form-control" placeholder="e.g. 25500.0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="alert-notes">Reminder Notes / Strategy</label>
+                    <textarea id="alert-notes" class="form-control" rows="2" placeholder="e.g. Breakout retest confirmation, trailing stop loss..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-alert" class="btn-sm btn-ghost">Cancel</button>
+                <button id="btn-save-alert" class="btn-sm btn-primary">Activate Alert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding / Editing Research Notes (Phase 12) -->
+    <div id="research-note-modal" class="modal-backdrop">
+        <div class="modal-card modal-card-lg">
+            <div class="modal-header">
+                <h3 id="research-note-modal-title">Save Research Note</h3>
+                <button id="btn-close-note-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="note-title">Title / Headline</label>
+                    <input type="text" id="note-title" class="form-control" placeholder="e.g. Distributed Consensus in Raft: Safety Invariants">
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="note-query">Investigated Query</label>
+                        <input type="text" id="note-query" class="form-control" placeholder="e.g. Raft consensus algorithm">
+                    </div>
+                    <div class="form-group">
+                        <label for="note-category">Category</label>
+                        <select id="note-category" class="form-control">
+                            <option value="technology">Technology & Code</option>
+                            <option value="academic">Academic & Theory</option>
+                            <option value="company">Company & Industry</option>
+                            <option value="market">Financial Market</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="note-summary">Takeaway Summary</label>
+                    <textarea id="note-summary" class="form-control" rows="2" placeholder="Key conclusions, decisions, or core finding..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="note-markdown">Report Markdown Content</label>
+                    <textarea id="note-markdown" class="form-control" rows="8" placeholder="Full research notes, quotes, equations, or code..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="note-tags">Tags (comma-separated)</label>
+                    <input type="text" id="note-tags" class="form-control" placeholder="e.g. distributed-systems, raft, consensus, architecture">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-note" class="btn-sm btn-ghost">Cancel</button>
+                <button id="btn-save-note" class="btn-sm btn-primary">Save to Notebook</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Scheduled Tasks (Phase 13) -->
+    <div id="automation-task-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Schedule Automation Task</h3>
+                <button id="btn-close-task-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="task-name">Task Name</label>
+                    <input type="text" id="task-name" class="form-control" placeholder="e.g. Daily Project Sync">
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="task-action-type">Action Type</label>
+                        <select id="task-action-type" class="form-control">
+                            <option value="briefing">Morning / Daily Briefing</option>
+                            <option value="project_sync">GitHub Milestone Sync</option>
+                            <option value="command">Shell Command</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-interval">Interval (Seconds)</label>
+                        <input type="number" id="task-interval" class="form-control" value="3600" placeholder="e.g. 3600 for hourly">
+                    </div>
+                </div>
+                <div class="form-group" id="task-command-group" style="display: none;">
+                    <label for="task-command">Command</label>
+                    <input type="text" id="task-command" class="form-control" placeholder="e.g. git status">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-task" class="btn-sm btn-ghost">Cancel</button>
+                <button id="btn-save-task" class="btn-sm btn-primary">Create Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Viewing & Editing Workspace Files (Phase 13) -->
+    <div id="automation-file-modal" class="modal-backdrop">
+        <div class="modal-card modal-card-lg">
+            <div class="modal-header">
+                <h3 id="automation-file-modal-title">Workspace File</h3>
+                <button id="btn-close-file-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="workspace-file-path">File Path (Relative to /workspace)</label>
+                    <input type="text" id="workspace-file-path" class="form-control" placeholder="e.g. notes.txt or scripts/test.py">
+                </div>
+                <div class="form-group">
+                    <label for="workspace-file-content">File Content</label>
+                    <textarea id="workspace-file-content" class="form-control" rows="12" placeholder="Text, markdown, or code..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="check-overwrite-file" checked> Overwrite if file exists
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-file" class="btn-sm btn-ghost">Cancel</button>
+                <button id="btn-save-file" class="btn-sm btn-primary">Save File</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Complete System Diagnostics & Telemetry (Phase 15) -->
+    <div id="diagnostics-modal" class="modal-backdrop">
+        <div class="modal-card modal-card-lg">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="status-dot dot-online" id="diag-header-dot"></span>
+                    <h3 id="diagnostics-modal-title">NOUS System Health & Diagnostics</h3>
+                </div>
+                <button id="btn-close-diag-modal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body" id="diagnostics-modal-body">
+                <div class="diag-banner" id="diag-status-banner">
+                    <div class="diag-banner-title" id="diag-overall-title">CHECKING TELEMETRY...</div>
+                    <div class="diag-banner-desc" id="diag-overall-desc">Gathering real-time system metrics across all 7 databases and engine components.</div>
+                </div>
+
+                <div class="diag-sections-container">
+                    <!-- Section 1: 7 Core SQLite Engines -->
+                    <div class="diag-section">
+                        <div class="diag-section-header">
+                            <span class="diag-section-title">STORAGE ENGINES (7 SQLite WAL Databases)</span>
+                            <span class="status-pill pill-green" id="diag-dbs-summary-badge">7/7 HEALTHY</span>
+                        </div>
+                        <div class="diag-db-grid" id="diag-db-grid">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Hardware & Compute -->
+                    <div class="diag-section">
+                        <div class="diag-section-header">
+                            <span class="diag-section-title">HARDWARE & COMPUTE PROFILE</span>
+                            <span class="status-pill pill-cyan" id="diag-compute-badge">16GB / i5</span>
+                        </div>
+                        <div class="diag-hardware-grid">
+                            <div class="diag-hw-card">
+                                <span class="diag-hw-label">CPU Processor</span>
+                                <span class="diag-hw-val" id="diag-cpu-val">Detecting...</span>
+                            </div>
+                            <div class="diag-hw-card">
+                                <span class="diag-hw-label">Shared RAM Load</span>
+                                <span class="diag-hw-val" id="diag-ram-val">Detecting...</span>
+                            </div>
+                            <div class="diag-hw-card">
+                                <span class="diag-hw-label">Storage (E:\nous)</span>
+                                <span class="diag-hw-val" id="diag-disk-val">Detecting...</span>
+                            </div>
+                            <div class="diag-hw-card">
+                                <span class="diag-hw-label">Local Ollama Engine</span>
+                                <span class="diag-hw-val" id="diag-ollama-val">Detecting...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Live Smoke Test Output -->
+                    <div class="diag-section" id="diag-smoke-section" style="display: none;">
+                        <div class="diag-section-header">
+                            <span class="diag-section-title">IN-PROCESS SMOKE TEST RESULTS</span>
+                            <span class="status-pill" id="diag-smoke-badge">RUNNING</span>
+                        </div>
+                        <div class="diag-smoke-list" id="diag-smoke-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: space-between;">
+                <button id="btn-run-smoke-test" class="btn-sm btn-outline">
+                    ⚡ Run In-Process Smoke Test
+                </button>
+                <div style="display: flex; gap: 8px;">
+                    <button id="btn-refresh-diag" class="btn-sm btn-ghost">↻ Refresh</button>
+                    <button id="btn-close-diag-footer" class="btn-sm btn-primary">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js?v=1.0.5"></script>
+</body>
+</html>
