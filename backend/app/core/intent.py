@@ -117,8 +117,8 @@ class IntentClassifier:
         if re.search(r"\b(calculate|compute)\b", text, re.IGNORECASE) or (
             any(op in text for op in ["+", "*", "/", "^"]) and any(c.isdigit() for c in text)
         ):
-            # Extract expression
-            calc_match = re.search(r"[\d\.\s\+\-\*\/\^\(\)]+", text)
+            # Extract arithmetic expression (must start with digit or parenthesis)
+            calc_match = re.search(r"\(?[\d]+[\d\.\s\+\-\*\/\^\(\)]*[\d\)]", text)
             if calc_match and len(calc_match.group(0).strip()) >= 3:
                 expr = calc_match.group(0).strip()
                 return IntentResult(

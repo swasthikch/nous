@@ -35,16 +35,16 @@ env/
 .env.local
 
 # Databases and runtime data
-data/database/*
-data/sessions/*
-data/logs/*
-data/test_w/*
-data/*.json
+data/
 *.sqlite
 *.sqlite3
 *.db
 *.db-wal
 *.db-shm
+
+# User workspace files
+workspace/*
+!workspace/.gitkeep
 
 # IDE and OS files
 .vscode/

@@ -23,6 +23,14 @@ from backend.app.api.automation_api import router as automation_router
 from backend.app.api.security_api import router as security_router
 from backend.app.api.diagnostics_api import router as diagnostics_router
 from backend.app.api.public_apis_api import router as public_apis_router
+from backend.app.api.tools_api import router as tools_router
+from backend.app.api.agents_api import router as agents_router
+from backend.app.api.desktop_api import router as desktop_router
+from backend.app.api.dashboard_api import router as dashboard_router
+from backend.app.api.workflows_api import router as workflows_router
+from backend.app.api.multidevice_api import router as multidevice_router
+from backend.app.api.auth_api import router as auth_router
+from backend.app.api.cloud_api import router as cloud_router
 from backend.app.core.ollama_client import ollama_client
 from backend.app.automation.daemon import autonomous_daemon
 
@@ -89,6 +97,14 @@ app.include_router(automation_router)
 app.include_router(security_router)
 app.include_router(diagnostics_router)
 app.include_router(public_apis_router)
+app.include_router(tools_router)
+app.include_router(agents_router)
+app.include_router(desktop_router)
+app.include_router(dashboard_router)
+app.include_router(workflows_router)
+app.include_router(multidevice_router)
+app.include_router(auth_router)
+app.include_router(cloud_router)
 
 # Mount frontend static files if directory exists
 if FRONTEND_DIR.exists():

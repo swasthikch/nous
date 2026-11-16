@@ -8,6 +8,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css?v=1.0.6">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#00d4ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 </head>
 <body class="dark-theme">
     <div class="app-container">
@@ -42,6 +47,11 @@
                 <a href="#" class="nav-item active" id="nav-chat">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                     <span>AI Brain & Chat</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-agents">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span>Specialized Agents</span>
+                    <span class="nav-badge" id="agents-count-badge">5 ACTIVE</span>
                 </a>
                 <a href="#" class="nav-item" id="nav-memory">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
@@ -102,7 +112,11 @@
                     </div>
                     <div class="spec-row">
                         <span class="spec-label">RAM</span>
-                        <span class="spec-value">16 GB (Shared)</span>
+                        <span class="spec-value" id="spec-ram">16 GB (Shared)</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Battery</span>
+                        <span class="spec-value" id="spec-battery">Detecting...</span>
                     </div>
                     <div class="spec-row">
                         <span class="spec-label">Engine</span>
@@ -280,6 +294,7 @@
                                 <label class="toggle-label" for="memory-toggle">System Memory:</label>
                                 <input type="checkbox" id="memory-toggle" class="toggle-checkbox" checked>
                             </div>
+                            <button id="btn-export-memory" class="btn-sm btn-outline">⬇ Export</button>
                             <button id="btn-add-memory" class="btn-sm btn-primary">+ Add Memory</button>
                         </div>
                     </div>
@@ -291,6 +306,8 @@
                             <button class="cat-tab" data-cat="user_profile">User Profile</button>
                             <button class="cat-tab" data-cat="personal_info">Personal Info</button>
                             <button class="cat-tab" data-cat="project">Projects</button>
+                            <button class="cat-tab" data-cat="knowledge_note">Knowledge</button>
+                            <button class="cat-tab" data-cat="episodic_event">Episodic</button>
                             <button class="cat-tab" data-cat="routine">Routines</button>
                             <button class="cat-tab" data-cat="conversation">Conversations</button>
                         </div>
@@ -334,6 +351,17 @@
                             </div>
                         </div>
 
+                        <div class="voice-waveform" id="voice-waveform">
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                        </div>
+
                         <div class="voice-status-text" id="voice-status-label">Click the Orb or Microphone to start speaking</div>
 
                         <!-- Live Transcription / Spoken Answer Box -->
@@ -367,6 +395,14 @@
                         <h3>Voice & Speech Configuration</h3>
                         <div class="voice-settings-grid">
                             <div class="setting-item">
+                                <label for="select-language">Spoken Language</label>
+                                <select id="select-language" class="form-control">
+                                    <option value="en-US">English (US)</option>
+                                    <option value="en-IN">English (India)</option>
+                                    <option value="hi-IN">हिन्दी (Hindi)</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
                                 <label for="select-voice">Voice Character</label>
                                 <select id="select-voice" class="form-control">
                                     <option value="">Default System Voice</option>
@@ -387,6 +423,10 @@
                             <div class="setting-item toggle-item">
                                 <label for="toggle-chat-auto-speak">Auto-Speak in Text Chat:</label>
                                 <input type="checkbox" id="toggle-chat-auto-speak" class="toggle-checkbox" checked>
+                            </div>
+                            <div class="setting-item toggle-item">
+                                <label for="toggle-continuous-loop">Hands-Free Conversational Loop:</label>
+                                <input type="checkbox" id="toggle-continuous-loop" class="toggle-checkbox">
                             </div>
                         </div>
                     </div>
@@ -1162,6 +1202,144 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
                         <div class="audit-events-list" id="audit-events-list">
                             <!-- Populated dynamically -->
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: Specialized AI Agents View -->
+            <div id="view-agents" class="view-panel">
+                <div class="agents-dashboard" style="padding: 24px; max-width: 1400px; width: 100%; height: 100%; margin: 0 auto; overflow-y: auto;">
+                    <div class="agents-header-card" style="background: rgba(18, 22, 34, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h2 style="font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 6px;">Specialized AI Agents</h2>
+                            <p style="font-size: 13px; color: #8892b0; margin: 0;">Goal-directed domain agents connected to the Central Brain with shared 5-Tier Memory &amp; Safe Tool Calling.</p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <span class="nav-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">5 AGENTS ONLINE</span>
+                        </div>
+                    </div>
+
+                    <!-- 5 Agents Grid -->
+                    <div class="agents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 18px; margin-bottom: 24px;">
+                        
+                        <!-- 1. Research Agent -->
+                        <div class="agent-card" style="background: rgba(18, 22, 34, 0.8); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; font-size: 18px;">🔬</div>
+                                        <div>
+                                            <h4 style="color: #fff; font-size: 15px; margin: 0;">Research Agent</h4>
+                                            <span style="font-size: 11px; color: #3b82f6; font-family: monospace;">role: research</span>
+                                        </div>
+                                    </div>
+                                    <span style="font-size: 11px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 2px 8px; border-radius: 4px;">Memory: KNOWLEDGE</span>
+                                </div>
+                                <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px;">Multi-source web investigations (DuckDuckGo, Wikipedia, arXiv), evidence-based synthesis, and citation generation.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="agent-research-input" placeholder="e.g. Research Raft consensus" class="form-control form-control-sm" style="flex: 1; font-size: 12px;" value="Research Raft consensus algorithm and explain its safety proofs">
+                                <button class="btn-sm btn-primary btn-run-agent" data-agent="research_agent" data-input-id="agent-research-input">Run</button>
+                            </div>
+                        </div>
+
+                        <!-- 2. Coding Agent -->
+                        <div class="agent-card" style="background: rgba(18, 22, 34, 0.8); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; font-size: 18px;">💻</div>
+                                        <div>
+                                            <h4 style="color: #fff; font-size: 15px; margin: 0;">Coding Agent</h4>
+                                            <span style="font-size: 11px; color: #a855f7; font-family: monospace;">role: coding</span>
+                                        </div>
+                                    </div>
+                                    <span style="font-size: 11px; background: rgba(168, 85, 247, 0.15); color: #c084fc; padding: 2px 8px; border-radius: 4px;">Memory: PROJECT</span>
+                                </div>
+                                <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px;">Workspace code inspection, Git branch/commit telemetry, Python py_compile syntax test execution.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="agent-coding-input" placeholder="e.g. Check git status or test backend/app/main.py" class="form-control form-control-sm" style="flex: 1; font-size: 12px;" value="Check git status and commit history">
+                                <button class="btn-sm btn-primary btn-run-agent" data-agent="coding_agent" data-input-id="agent-coding-input">Run</button>
+                            </div>
+                        </div>
+
+                        <!-- 3. Productivity Agent -->
+                        <div class="agent-card" style="background: rgba(18, 22, 34, 0.8); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(234, 179, 8, 0.15); display: flex; align-items: center; justify-content: center; font-size: 18px;">⏱️</div>
+                                        <div>
+                                            <h4 style="color: #fff; font-size: 15px; margin: 0;">Productivity Agent</h4>
+                                            <span style="font-size: 11px; color: #eab308; font-family: monospace;">role: productivity</span>
+                                        </div>
+                                    </div>
+                                    <span style="font-size: 11px; background: rgba(234, 179, 8, 0.15); color: #facc15; padding: 2px 8px; border-radius: 4px;">Memory: EPISODIC</span>
+                                </div>
+                                <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px;">Daily schedule coordination, task prioritization (Eisenhower matrix), and automated missed activity rescheduling.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="agent-prod-input" placeholder="e.g. Give me my daily schedule briefing" class="form-control form-control-sm" style="flex: 1; font-size: 12px;" value="Give me my daily schedule briefing">
+                                <button class="btn-sm btn-primary btn-run-agent" data-agent="productivity_agent" data-input-id="agent-prod-input">Run</button>
+                            </div>
+                        </div>
+
+                        <!-- 4. File Agent -->
+                        <div class="agent-card" style="background: rgba(18, 22, 34, 0.8); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; font-size: 18px;">📁</div>
+                                        <div>
+                                            <h4 style="color: #fff; font-size: 15px; margin: 0;">File Agent</h4>
+                                            <span style="font-size: 11px; color: #10b981; font-family: monospace;">role: file</span>
+                                        </div>
+                                    </div>
+                                    <span style="font-size: 11px; background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 2px 8px; border-radius: 4px;">Sandbox: SECURED</span>
+                                </div>
+                                <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px;">Workspace navigation, document comprehension, and strict path traversal directory escape defense.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="agent-file-input" placeholder="e.g. List files in the workspace" class="form-control form-control-sm" style="flex: 1; font-size: 12px;" value="List files in the workspace">
+                                <button class="btn-sm btn-primary btn-run-agent" data-agent="file_agent" data-input-id="agent-file-input">Run</button>
+                            </div>
+                        </div>
+
+                        <!-- 5. Market Intelligence Agent -->
+                        <div class="agent-card" style="background: rgba(18, 22, 34, 0.8); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(244, 63, 94, 0.15); display: flex; align-items: center; justify-content: center; font-size: 18px;">📈</div>
+                                        <div>
+                                            <h4 style="color: #fff; font-size: 15px; margin: 0;">Market Agent</h4>
+                                            <span style="font-size: 11px; color: #f43f5e; font-family: monospace;">role: market</span>
+                                        </div>
+                                    </div>
+                                    <span style="font-size: 11px; background: rgba(244, 63, 94, 0.15); color: #fb7185; padding: 2px 8px; border-radius: 4px;">Zero-Trading Gate</span>
+                                </div>
+                                <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px;">Benchmark indices (NIFTY 50, S&amp;P 500), FII/DII institutional flows, 20-factor causal reasoning, and strict trade execution blocks.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="agent-market-input" placeholder="e.g. Explain current NIFTY 50 and institutional flows" class="form-control form-control-sm" style="flex: 1; font-size: 12px;" value="Explain current NIFTY 50 and institutional flows">
+                                <button class="btn-sm btn-primary btn-run-agent" data-agent="market_agent" data-input-id="agent-market-input">Run</button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Agent Execution & Action Log Output Console -->
+                    <div class="agent-console-card" style="background: rgba(14, 18, 28, 0.9); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 14px;">⚡</span>
+                                <h3 style="font-size: 14px; font-weight: 600; color: #fff; margin: 0;">Agent Live Execution Console</h3>
+                            </div>
+                            <div id="agent-console-meta" style="font-size: 11px; color: #64748b; font-family: monospace;">Ready. Click 'Run' on any agent above to trigger execution.</div>
+                        </div>
+                        <div id="agent-console-output" style="min-height: 140px; max-height: 400px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #cbd5e1; line-height: 1.6; white-space: pre-wrap; background: rgba(0, 0, 0, 0.3); border-radius: 8px; padding: 14px;">// Select any of the 5 specialized agents above or enter a prompt to execute.
+// Every agent operates with permission verification, execution timeouts, and shared memory.</div>
                     </div>
                 </div>
             </div>

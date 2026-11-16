@@ -1,4 +1,6 @@
-"""SQLite Database Initialization and Connection Management for NOUS Memory."""
+"""SQLite Database Initialization and Connection Management for NOUS 5-Tier Memory."""
+
+from __future__ import annotations
 
 import json
 import sqlite3
@@ -14,8 +16,8 @@ DB_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH = DB_DIR / "nous_memory.db"
 
 
-def init_database(db_file: Path = DB_PATH):
-    """Initialize memory SQLite schema and default configuration."""
+def init_database(db_file: Path = DB_PATH) -> None:
+    """Initialize memory SQLite schema and perform safe non-destructive migration."""
     conn = sqlite3.connect(str(db_file))
     cursor = conn.cursor()
 
@@ -23,13 +25,18 @@ def init_database(db_file: Path = DB_PATH):
     cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("PRAGMA foreign_keys = ON;")
 
-    # Table: memories
+    # 1. Base table creation
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS memories (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tier TEXT DEFAULT 'personal',
             category TEXT NOT NULL,
             key TEXT NOT NULL,
             content TEXT NOT NULL,
+            importance REAL DEFAULT 0.5,
+            provenance TEXT DEFAULT 'manual',
+            access_count INTEGER DEFAULT 0,
+            last_accessed_at REAL,
             metadata_json TEXT DEFAULT '{}',
             is_active INTEGER DEFAULT 1,
             created_at REAL NOT NULL,
@@ -37,12 +44,29 @@ def init_database(db_file: Path = DB_PATH):
         );
     """)
 
-    # Indexes for fast lookup
+    # 2. Check existing columns and run safe migrations if upgrading older databases
+    cursor.execute("PRAGMA table_info(memories);")
+    existing_cols = {row[1] for row in cursor.fetchall()}
+
+    if "tier" not in existing_cols:
+        cursor.execute("ALTER TABLE memories ADD COLUMN tier TEXT DEFAULT 'personal';")
+    if "importance" not in existing_cols:
+        cursor.execute("ALTER TABLE memories ADD COLUMN importance REAL DEFAULT 0.5;")
+    if "provenance" not in existing_cols:
+        cursor.execute("ALTER TABLE memories ADD COLUMN provenance TEXT DEFAULT 'manual';")
+    if "access_count" not in existing_cols:
+        cursor.execute("ALTER TABLE memories ADD COLUMN access_count INTEGER DEFAULT 0;")
+    if "last_accessed_at" not in existing_cols:
+        cursor.execute("ALTER TABLE memories ADD COLUMN last_accessed_at REAL;")
+
+    # 3. Create high-performance lookup indexes
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_memories_tier ON memories(tier);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_memories_cat ON memories(category);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_memories_key ON memories(key);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_memories_active ON memories(is_active);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_memories_imp ON memories(importance);")
 
-    # Table: memory_settings (key-value configuration)
+    # 4. Table: memory_settings (key-value configuration)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS memory_settings (
             key TEXT PRIMARY KEY,
@@ -55,7 +79,8 @@ def init_database(db_file: Path = DB_PATH):
     default_settings = [
         ("memory_enabled", "true"),
         ("retrieval_limit", "5"),
-        ("auto_suggest", "true"),
+        ("auto_extract", "true"),
+        ("importance_threshold", "0.3"),
     ]
     now = time.time()
     for k, v in default_settings:
@@ -81,7 +106,3 @@ def get_db(db_file: Path = DB_PATH) -> Generator[sqlite3.Connection, None, None]
         raise
     finally:
         conn.close()
-
-
-# Initialize on import
-init_database()

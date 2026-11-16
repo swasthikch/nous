@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const navResearch = document.getElementById("nav-research");
     const navAutomation = document.getElementById("nav-automation");
     const navSecurity = document.getElementById("nav-security");
+    const navAgents = document.getElementById("nav-agents");
     const viewChat = document.getElementById("view-chat");
     const viewMemory = document.getElementById("view-memory");
     const viewVoice = document.getElementById("view-voice");
@@ -26,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const viewResearch = document.getElementById("view-research");
     const viewAutomation = document.getElementById("view-automation");
     const viewSecurity = document.getElementById("view-security");
+    const viewAgents = document.getElementById("view-agents");
     const memoryCountBadge = document.getElementById("memory-count-badge");
     const routineCountBadge = document.getElementById("routine-count-badge");
     const emailCountBadge = document.getElementById("email-count-badge");
@@ -81,12 +83,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnVoiceToggleText = document.getElementById("btn-voice-toggle-text");
     const btnVoiceStop = document.getElementById("btn-voice-stop");
     const selectVoice = document.getElementById("select-voice");
+    const selectLanguage = document.getElementById("select-language");
     const sliderRate = document.getElementById("slider-rate");
     const valRate = document.getElementById("val-rate");
     const sliderPitch = document.getElementById("slider-pitch");
     const valPitch = document.getElementById("val-pitch");
     const toggleWakeWord = document.getElementById("toggle-wake-word");
     const toggleChatAutoSpeak = document.getElementById("toggle-chat-auto-speak");
+    const toggleContinuousLoop = document.getElementById("toggle-continuous-loop");
+    const voiceWaveform = document.getElementById("voice-waveform");
 
     // Routine & Daily Life Elements (Phase 7)
     const routineDatePicker = document.getElementById("routine-date-picker");
@@ -242,17 +247,22 @@ document.addEventListener("DOMContentLoaded", () => {
     let speechPitch = 1.0;
     let wakeWordEnabled = false;
     let autoSpeakInChat = true;
+    let currentLanguage = "en-US";
+    let continuousLoopEnabled = false;
 
     // ==============================================================
     // NAVIGATION SWITCHING (Chat vs. Memory vs. Voice vs. Routine vs. Email)
     // ==============================================================
     function switchView(target) {
-        [navChat, navMemory, navVoice, navRoutine, navEmail, navProjects, navMarket, navResearch, navAutomation, navSecurity].forEach(n => n && n.classList.remove("active"));
-        [viewChat, viewMemory, viewVoice, viewRoutine, viewEmail, viewProjects, viewMarket, viewResearch, viewAutomation, viewSecurity].forEach(v => v && v.classList.remove("active"));
+        [navChat, navAgents, navMemory, navVoice, navRoutine, navEmail, navProjects, navMarket, navResearch, navAutomation, navSecurity].forEach(n => n && n.classList.remove("active"));
+        [viewChat, viewAgents, viewMemory, viewVoice, viewRoutine, viewEmail, viewProjects, viewMarket, viewResearch, viewAutomation, viewSecurity].forEach(v => v && v.classList.remove("active"));
 
         if (target === "chat") {
             navChat.classList.add("active");
             viewChat.classList.add("active");
+        } else if (target === "agents") {
+            if (navAgents) navAgents.classList.add("active");
+            if (viewAgents) viewAgents.classList.add("active");
         } else if (target === "memory") {
             navMemory.classList.add("active");
             viewMemory.classList.add("active");
@@ -344,6 +354,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     navChat.addEventListener("click", (e) => { e.preventDefault(); switchView("chat"); });
+    if (navAgents) navAgents.addEventListener("click", (e) => { e.preventDefault(); switchView("agents"); });
     navMemory.addEventListener("click", (e) => { e.preventDefault(); switchView("memory"); });
     navVoice.addEventListener("click", (e) => { e.preventDefault(); switchView("voice"); });
     if (navRoutine) navRoutine.addEventListener("click", (e) => { e.preventDefault(); switchView("routine"); });
@@ -353,6 +364,54 @@ document.addEventListener("DOMContentLoaded", () => {
     if (navResearch) navResearch.addEventListener("click", (e) => { e.preventDefault(); switchView("research"); });
     if (navAutomation) navAutomation.addEventListener("click", (e) => { e.preventDefault(); switchView("automation"); });
     if (navSecurity) navSecurity.addEventListener("click", (e) => { e.preventDefault(); switchView("security"); });
+
+    // Specialized Agents execution handler (Phase 4)
+    document.querySelectorAll(".btn-run-agent").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const agentId = btn.getAttribute("data-agent");
+            const inputId = btn.getAttribute("data-input-id");
+            const inputElem = document.getElementById(inputId);
+            const query = inputElem ? inputElem.value.trim() : "";
+            if (!query) return;
+
+            const meta = document.getElementById("agent-console-meta");
+            const output = document.getElementById("agent-console-output");
+            if (meta) meta.textContent = `Running ${agentId}...`;
+            if (output) output.textContent = `[EXECUTING] Agent: ${agentId}\n[QUERY] "${query}"\n\nContacting Central Brain & executing agent workflow...\n`;
+
+            try {
+                const res = await fetch(`/api/agents/${agentId}/run`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query: query, context: {} })
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+                const data = await res.json();
+                if (meta) meta.textContent = `Completed in ${data.elapsed_seconds}s | Actions: ${data.actions_taken.length} | Memories: ${data.memories_created.length}`;
+                if (output) {
+                    let formatted = `=== [AGENT: ${data.agent_name.toUpperCase()}] ===\n`;
+                    formatted += `Role: ${data.role} | Elapsed: ${data.elapsed_seconds}s\n\n`;
+                    if (data.actions_taken && data.actions_taken.length > 0) {
+                        formatted += `--- [ACTIONS EXECUTED] ---\n`;
+                        data.actions_taken.forEach((a, i) => {
+                            formatted += `${i+1}. Tool: ${a.tool_name} (Status: ${a.status})\n   Parameters: ${JSON.stringify(a.parameters)}\n`;
+                        });
+                        formatted += `\n`;
+                    }
+                    if (data.memories_created && data.memories_created.length > 0) {
+                        formatted += `--- [MEMORIES INDEXED] ---\n`;
+                        data.memories_created.forEach(m => formatted += `* Saved to Memory: ${m}\n`);
+                        formatted += `\n`;
+                    }
+                    formatted += `--- [AGENT RESPONSE] ---\n${data.response}\n`;
+                    output.textContent = formatted;
+                }
+            } catch (err) {
+                if (meta) meta.textContent = `Error during execution.`;
+                if (output) output.textContent = `[ERROR] Failed to execute agent: ${err.message}`;
+            }
+        });
+    });
 
     // ==============================================================
     // CHAT & CONVERSATION SESSIONS
@@ -591,6 +650,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
             await loadModels();
             await checkMemorySettings();
+
+            // Phase 7: Fetch live Windows native hardware telemetry and OS aggregator
+            try {
+                const dashRes = await fetch("/api/dashboard/overview");
+                if (dashRes.ok) {
+                    const dash = await dashRes.json();
+                    if (dash.hardware) {
+                        const cpuEl = document.getElementById("spec-cpu");
+                        if (cpuEl) cpuEl.textContent = `${dash.hardware.cpu_load_percent}% (${dash.hardware.os})`;
+                        const ramEl = document.getElementById("spec-ram");
+                        if (ramEl) ramEl.textContent = `${dash.hardware.ram_avail_gb} GB free / ${dash.hardware.ram_total_gb} GB (${dash.hardware.ram_load_percent}%)`;
+                        const battEl = document.getElementById("spec-battery");
+                        if (battEl) battEl.textContent = `${dash.hardware.battery_percent}% (${dash.hardware.power_plugged ? (dash.hardware.is_charging ? "Charging" : "Plugged") : "Battery"})`;
+                    }
+                    if (memoryCountBadge && dash.memory) {
+                        memoryCountBadge.textContent = dash.memory.total_items;
+                    }
+                    if (routineCountBadge && dash.routine) {
+                        routineCountBadge.textContent = dash.routine.pending;
+                    }
+                    const agentsBadge = document.getElementById("agents-count-badge");
+                    if (agentsBadge && dash.agents) {
+                        agentsBadge.textContent = `${dash.agents.count} ACTIVE`;
+                    }
+                }
+            } catch (dErr) {
+                console.warn("Dashboard overview update skipped:", dErr);
+            }
         } catch (error) {
             console.error("Health check error:", error);
             systemStatusIndicator.className = "status-dot dot-offline";
@@ -656,55 +743,154 @@ document.addEventListener("DOMContentLoaded", () => {
         bubbleElement.classList.add("typing-cursor");
 
         try {
-            const response = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    message: text,
-                    session_id: currentSessionId,
-                    model: activeModel,
-                }),
-            });
+            // Attempt high-performance real-time token streaming via SSE
+            let streamSuccess = false;
+            let accumulatedText = "";
+            let streamMeta = null;
+            let toolsExecuted = [];
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.detail || `HTTP ${response.status}`);
-            }
-
-            const data = await response.json();
-            currentSessionId = data.session_id;
-
-            bubbleElement.classList.remove("typing-cursor");
-            bubbleElement.innerHTML = formatMarkdown(data.response);
-
-            if (data.tools_executed && data.tools_executed.length > 0) {
-                const banner = document.createElement("div");
-                banner.className = "tools-executed-banner";
-
-                data.tools_executed.forEach((tool) => {
-                    const badge = document.createElement("span");
-                    badge.className = "tool-badge";
-                    badge.innerHTML = `⚡ <strong>Verified Tool:</strong> ${tool.tool_name}`;
-                    banner.appendChild(badge);
+            try {
+                const response = await fetch("/api/chat/stream", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: text,
+                        session_id: currentSessionId,
+                        model: activeModel,
+                    }),
                 });
 
-                if (data.intent) {
-                    const intentBadge = document.createElement("span");
-                    intentBadge.className = "intent-badge";
-                    intentBadge.textContent = `🎯 Intent: ${data.intent}`;
-                    banner.appendChild(intentBadge);
-                }
+                if (response.ok && response.body && typeof response.body.getReader === "function") {
+                    streamSuccess = true;
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    let buffer = "";
+                    let banner = null;
 
-                bodyElement.insertBefore(banner, bubbleElement);
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        buffer += decoder.decode(value, { stream: true });
+                        const events = buffer.split("\n\n");
+                        buffer = events.pop(); // retain trailing partial event
+
+                        for (const evText of events) {
+                            const trimmed = evText.trim();
+                            if (!trimmed.startsWith("data: ")) continue;
+                            const payload = trimmed.slice(6).trim();
+                            if (!payload) continue;
+
+                            try {
+                                const ev = JSON.parse(payload);
+                                if (ev.type === "intent") {
+                                    currentSessionId = ev.data.session_id;
+                                    const target = ev.data.target ? `${ev.data.target.toUpperCase()} (${ev.data.model})` : activeModel;
+                                    metaElement.textContent = `Thinking... · ${target}`;
+                                } else if (ev.type === "tool_start") {
+                                    if (!banner) {
+                                        banner = document.createElement("div");
+                                        banner.className = "tools-executed-banner";
+                                        bodyElement.insertBefore(banner, bubbleElement);
+                                    }
+                                    const badge = document.createElement("span");
+                                    badge.className = "tool-badge tool-badge-running";
+                                    badge.id = `tool-badge-${ev.data.tool_name}`;
+                                    badge.innerHTML = `⚡ <strong>Running Tool:</strong> ${ev.data.tool_name}`;
+                                    banner.appendChild(badge);
+                                } else if (ev.type === "tool_result") {
+                                    toolsExecuted.push(ev.data);
+                                    const badge = document.getElementById(`tool-badge-${ev.data.tool_name}`);
+                                    if (badge) {
+                                        badge.className = "tool-badge";
+                                        badge.innerHTML = `⚡ <strong>Verified Tool:</strong> ${ev.data.tool_name}`;
+                                    }
+                                } else if (ev.type === "token") {
+                                    accumulatedText += ev.data.delta;
+                                    bubbleElement.innerHTML = formatMarkdown(accumulatedText);
+                                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                                } else if (ev.type === "done") {
+                                    streamMeta = ev.data;
+                                } else if (ev.type === "error") {
+                                    throw new Error(ev.data.error);
+                                }
+                            } catch (e) {
+                                console.warn("Stream event parse warning:", e);
+                            }
+                        }
+                    }
+
+                    bubbleElement.classList.remove("typing-cursor");
+                    if (accumulatedText) {
+                        bubbleElement.innerHTML = formatMarkdown(accumulatedText);
+                    }
+
+                    if (streamMeta) {
+                        const tps = streamMeta.tokens_per_second ? ` · ${streamMeta.tokens_per_second} t/s` : "";
+                        metaElement.textContent = `Completed in ${streamMeta.elapsed_seconds}s${tps}`;
+                        responseStats.textContent = `Last response: ${streamMeta.elapsed_seconds}s (streamed)`;
+                    }
+
+                    await loadSessions();
+                    await checkMemorySettings();
+                }
+            } catch (streamErr) {
+                console.warn("Streaming fetch failed, attempting non-streaming fallback:", streamErr);
+                streamSuccess = false;
             }
 
-            const targetInfo = data.routing ? `${data.routing.selected_target.toUpperCase()} (${data.routing.selected_model})` : activeModel;
-            const tps = data.tokens_per_second ? ` · ${data.tokens_per_second} t/s` : "";
-            metaElement.textContent = `${targetInfo} · ${data.elapsed_seconds}s${tps}`;
-            responseStats.textContent = `Last response: ${data.elapsed_seconds}s (${targetInfo})`;
+            // Fallback to non-streaming POST /api/chat if streaming was not supported
+            if (!streamSuccess) {
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: text,
+                        session_id: currentSessionId,
+                        model: activeModel,
+                    }),
+                });
 
-            await loadSessions();
-            await checkMemorySettings();
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                currentSessionId = data.session_id;
+
+                bubbleElement.classList.remove("typing-cursor");
+                bubbleElement.innerHTML = formatMarkdown(data.response);
+
+                if (data.tools_executed && data.tools_executed.length > 0) {
+                    const banner = document.createElement("div");
+                    banner.className = "tools-executed-banner";
+
+                    data.tools_executed.forEach((tool) => {
+                        const badge = document.createElement("span");
+                        badge.className = "tool-badge";
+                        badge.innerHTML = `⚡ <strong>Verified Tool:</strong> ${tool.tool_name}`;
+                        banner.appendChild(badge);
+                    });
+
+                    if (data.intent) {
+                        const intentBadge = document.createElement("span");
+                        intentBadge.className = "intent-badge";
+                        intentBadge.textContent = `🎯 Intent: ${data.intent}`;
+                        banner.appendChild(intentBadge);
+                    }
+
+                    bodyElement.insertBefore(banner, bubbleElement);
+                }
+
+                const targetInfo = data.routing ? `${data.routing.selected_target.toUpperCase()} (${data.routing.selected_model})` : activeModel;
+                const tps = data.tokens_per_second ? ` · ${data.tokens_per_second} t/s` : "";
+                metaElement.textContent = `${targetInfo} · ${data.elapsed_seconds}s${tps}`;
+                responseStats.textContent = `Last response: ${data.elapsed_seconds}s (${targetInfo})`;
+
+                await loadSessions();
+                await checkMemorySettings();
+            }
 
         } catch (error) {
             console.error("Chat error:", error);
@@ -945,6 +1131,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Modal Handling
+    const btnExportMemory = document.getElementById("btn-export-memory");
+    if (btnExportMemory) {
+        btnExportMemory.addEventListener("click", async () => {
+            try {
+                const res = await fetch("/api/memory/export?format=json");
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `nous_memories_export_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (e) {
+                alert("Failed to export memories: " + e.message);
+            }
+        });
+    }
+
     btnAddMemory.addEventListener("click", () => {
         modalTitle.textContent = "Add New Memory";
         editMemoryId.value = "";
@@ -1013,7 +1220,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==============================================================
-    // VOICE ASSISTANT ENGINE (PHASE 6)
+    // ==============================================================
+    // VOICE ASSISTANT ENGINE (PHASE 5 UPGRADE: BILINGUAL & CONVERSATIONAL LOOP)
     // ==============================================================
     function initVoiceSystem() {
         // 1. Initialize Speech Synthesis Voices
@@ -1022,21 +1230,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 systemVoices = window.speechSynthesis.getVoices();
                 selectVoice.innerHTML = "";
                 
-                // Prioritize English natural voices
+                // Prioritize voices according to current selected language
+                let matchedVoice = null;
                 systemVoices.forEach((v, idx) => {
                     const opt = document.createElement("option");
                     opt.value = idx;
                     opt.textContent = `${v.name} (${v.lang})`;
-                    if (v.lang.startsWith("en") && (v.name.includes("Natural") || v.name.includes("David") || v.name.includes("Google"))) {
-                        opt.selected = true;
-                        selectedVoice = v;
+
+                    if (currentLanguage === "hi-IN") {
+                        if (v.lang.startsWith("hi") || v.name.includes("Hindi") || v.name.includes("Kalpana") || v.name.includes("Hemant")) {
+                            opt.selected = true;
+                            matchedVoice = v;
+                        }
+                    } else {
+                        if (v.lang.startsWith("en") && (v.name.includes("Natural") || v.name.includes("David") || v.name.includes("Google") || v.name.includes("India"))) {
+                            opt.selected = true;
+                            matchedVoice = v;
+                        }
                     }
                     selectVoice.appendChild(opt);
                 });
 
-                if (!selectedVoice && systemVoices.length > 0) {
-                    selectedVoice = systemVoices[0];
-                }
+                selectedVoice = matchedVoice || (systemVoices.length > 0 ? systemVoices[0] : null);
             }
 
             populateVoices();
@@ -1051,12 +1266,13 @@ document.addEventListener("DOMContentLoaded", () => {
             speechRecognition = new SpeechRec();
             speechRecognition.continuous = false;
             speechRecognition.interimResults = true;
-            speechRecognition.lang = "en-US";
+            speechRecognition.lang = currentLanguage;
 
             speechRecognition.onstart = () => {
                 isListening = true;
                 voiceOrbWrapper.className = "voice-orb-wrapper listening";
-                voiceStatusLabel.textContent = "Listening... Speak your command now.";
+                if (voiceWaveform) voiceWaveform.classList.add("active");
+                voiceStatusLabel.textContent = currentLanguage === "hi-IN" ? "सुन रहा हूँ... अपनी बात बोलिए।" : "Listening... Speak your command now.";
                 btnVoiceToggleText.textContent = "Stop Listening";
                 subtitleRole.textContent = "Listening (You):";
                 subtitleText.textContent = "...";
@@ -1112,6 +1328,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    if (selectLanguage) {
+        selectLanguage.addEventListener("change", (e) => {
+            currentLanguage = e.target.value;
+            if (speechRecognition) speechRecognition.lang = currentLanguage;
+            if ("speechSynthesis" in window) {
+                const populate = window.speechSynthesis.onvoiceschanged || function() {};
+                populate();
+            }
+        });
+    }
+
     sliderRate.addEventListener("input", (e) => {
         speechRate = parseFloat(e.target.value);
         valRate.textContent = `${speechRate.toFixed(1)}x`;
@@ -1135,6 +1362,12 @@ document.addEventListener("DOMContentLoaded", () => {
         autoSpeakInChat = e.target.checked;
     });
 
+    if (toggleContinuousLoop) {
+        toggleContinuousLoop.addEventListener("change", (e) => {
+            continuousLoopEnabled = e.target.checked;
+        });
+    }
+
     function toggleListening() {
         if (!speechRecognition) {
             initVoiceSystem();
@@ -1144,7 +1377,10 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             interruptSpeech();
             try {
-                speechRecognition.start();
+                if (speechRecognition) {
+                    speechRecognition.lang = currentLanguage;
+                    speechRecognition.start();
+                }
             } catch (err) {
                 console.warn("Could not start speech recognition:", err);
             }
@@ -1155,6 +1391,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!spokenText.trim()) return;
 
         voiceOrbWrapper.className = "voice-orb-wrapper thinking";
+        if (voiceWaveform) voiceWaveform.classList.remove("active");
         voiceStatusLabel.textContent = "Processing speech & querying AI Brain...";
 
         try {
@@ -1207,10 +1444,19 @@ document.addEventListener("DOMContentLoaded", () => {
         utterance.pitch = speechPitch;
 
         voiceOrbWrapper.className = "voice-orb-wrapper speaking";
+        if (voiceWaveform) voiceWaveform.classList.add("active");
 
         utterance.onend = () => {
             resetVoiceOrb();
-            voiceStatusLabel.textContent = "Speech completed. Click to speak again.";
+            voiceStatusLabel.textContent = "Speech completed. Click or speak to continue.";
+            // Hands-Free Conversational Loop: automatically listen after speaking
+            if (continuousLoopEnabled) {
+                setTimeout(() => {
+                    if (!isListening && !window.speechSynthesis.speaking) {
+                        toggleListening();
+                    }
+                }, 600);
+            }
         };
 
         utterance.onerror = (e) => {
@@ -1225,11 +1471,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if ("speechSynthesis" in window) {
             window.speechSynthesis.cancel();
         }
+        if (voiceWaveform) voiceWaveform.classList.remove("active");
         resetVoiceOrb();
     }
 
     function resetVoiceOrb() {
         voiceOrbWrapper.className = "voice-orb-wrapper";
+        if (voiceWaveform) voiceWaveform.classList.remove("active");
         btnVoiceToggleText.textContent = "Start Listening";
         isListening = false;
     }
@@ -4745,4 +4993,13 @@ document.addEventListener("DOMContentLoaded", () => {
     loadWorkspaceFiles();
     loadScheduledTasks();
     loadPrivacySettings();
+
+    // Register PWA Service Worker (Phase 9)
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("/static/sw.js")
+                .then((reg) => console.log("[NOUS PWA] Service worker registered with scope:", reg.scope))
+                .catch((err) => console.warn("[NOUS PWA] Service worker registration error:", err));
+        });
+    }
 });

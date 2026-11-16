@@ -74,11 +74,13 @@ class SensitiveDataRedactor:
         elif isinstance(data, dict):
             new_dict = {}
             for k, v in data.items():
-                # If key itself clearly indicates secret, mask value directly
-                if re.search(r"(?i)(password|secret|token|key|credential)", str(k)):
-                    new_dict[k] = "[REDACTED_FIELD]"
+                redacted_v = self.redact_data_structure(v)
+                if isinstance(redacted_v, str) and "[REDACTED_" in redacted_v:
+                    new_dict[k] = redacted_v
+                elif re.search(r"(?i)(password|secret|token|key|credential)", str(k)):
+                    new_dict[k] = "[REDACTED_SECRET]"
                 else:
-                    new_dict[k] = self.redact_data_structure(v)
+                    new_dict[k] = redacted_v
             return new_dict
         elif isinstance(data, list):
             return [self.redact_data_structure(item) for item in data]

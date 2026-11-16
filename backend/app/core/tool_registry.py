@@ -13,29 +13,18 @@ from datetime import datetime
 from typing import Any, Callable, Optional
 from pydantic import BaseModel, Field
 
+import asyncio
+import inspect
 from backend.app.core.permissions import RiskLevel, permission_manager
-
-
-class ToolParameter(BaseModel):
-    name: str
-    type: str
-    description: str
-    required: bool = True
-
-
-class ToolDefinition(BaseModel):
-    name: str
-    description: str
-    parameters: list[ToolParameter]
-    risk_level: RiskLevel = RiskLevel.LOW
-
-
-class ToolResult(BaseModel):
-    tool_name: str
-    success: bool
-    data: Optional[Any] = None
-    error: Optional[str] = None
-    is_verified: bool = True  # Distinguishes verified tool facts from LLM speculation
+from backend.app.tools.permissions import PermissionLevel, risk_to_permission
+from backend.app.tools.approval import approval_manager
+from backend.app.tools.logger import tool_logger
+from backend.app.tools.registry import (
+    safe_tool_registry,
+    ToolParameter,
+    ToolDefinition,
+    ToolResult,
+)
 
 
 class ToolRegistry:
@@ -50,9 +39,11 @@ class ToolRegistry:
         description: str,
         parameters: list[ToolParameter],
         risk_level: RiskLevel = RiskLevel.LOW,
+        timeout_seconds: float = 15.0,
     ):
         """Decorator to register a tool function."""
         def decorator(func: Callable):
+            perm_level = risk_to_permission(risk_level)
             self._tools[name] = {
                 "definition": ToolDefinition(
                     name=name,
@@ -62,7 +53,17 @@ class ToolRegistry:
                 ),
                 "func": func,
                 "risk_level": risk_level,
+                "permission_level": perm_level,
+                "timeout_seconds": timeout_seconds,
             }
+            # Mirror into modern safe_tool_registry for unified discovery
+            safe_tool_registry.register(
+                name=name,
+                description=description,
+                parameters=parameters,
+                permission_level=perm_level,
+                timeout_seconds=timeout_seconds,
+            )(func)
             return func
         return decorator
 
@@ -86,8 +87,14 @@ class ToolRegistry:
             })
         return definitions
 
-    async def execute(self, tool_name: str, params: dict[str, Any]) -> ToolResult:
-        """Execute a tool with permission checking and error handling."""
+    async def execute(
+        self,
+        tool_name: str,
+        params: dict[str, Any],
+        approval_token: Optional[str] = None,
+    ) -> ToolResult:
+        """Execute a tool with permission checking, timeouts, and audit logging."""
+        t0 = time.perf_counter()
         if tool_name not in self._tools:
             return ToolResult(
                 tool_name=tool_name,
@@ -98,24 +105,57 @@ class ToolRegistry:
 
         tool = self._tools[tool_name]
         risk_level = tool["risk_level"]
+        perm_level = risk_to_permission(risk_level)
 
-        # Check permissions
+        # Check permissions & approval tokens
         allowed, reason = permission_manager.check_permission(tool_name, risk_level, params)
         if not allowed:
-            return ToolResult(
-                tool_name=tool_name,
-                success=False,
-                error=f"Permission denied: {reason}",
-                is_verified=False,
-            )
+            if approval_token:
+                ok, req, token_msg = approval_manager.approve_token(approval_token)
+                if not ok:
+                    return ToolResult(
+                        tool_name=tool_name,
+                        success=False,
+                        error=f"Permission denied: {token_msg}",
+                        is_verified=False,
+                    )
+            else:
+                # Generate new approval token
+                req = approval_manager.create_request(
+                    tool_name=tool_name,
+                    parameters=params,
+                    permission_level=perm_level,
+                    description=reason,
+                )
+                return ToolResult(
+                    tool_name=tool_name,
+                    success=False,
+                    error=f"{reason} Approval token: {req.token}",
+                    is_verified=False,
+                )
 
         func = tool["func"]
+        timeout_s = tool.get("timeout_seconds", 15.0)
+
         try:
-            import inspect
             if inspect.iscoroutinefunction(func):
-                result_data = await func(**params)
+                result_data = await asyncio.wait_for(func(**params), timeout=timeout_s)
             else:
-                result_data = func(**params)
+                loop = asyncio.get_running_loop()
+                result_data = await asyncio.wait_for(
+                    loop.run_in_executor(None, lambda: func(**params)),
+                    timeout=timeout_s,
+                )
+
+            elapsed = time.perf_counter() - t0
+            tool_logger.log(
+                tool_name=tool_name,
+                permission_level=perm_level,
+                parameters=params,
+                status="SUCCESS",
+                elapsed_seconds=elapsed,
+                approval_token=approval_token,
+            )
 
             return ToolResult(
                 tool_name=tool_name,
@@ -123,11 +163,40 @@ class ToolRegistry:
                 data=result_data,
                 is_verified=True,
             )
-        except Exception as e:
+        except asyncio.TimeoutError:
+            elapsed = time.perf_counter() - t0
+            err_msg = f"Execution timeout: Tool '{tool_name}' exceeded {timeout_s}s limit."
+            tool_logger.log(
+                tool_name=tool_name,
+                permission_level=perm_level,
+                parameters=params,
+                status="TIMEOUT",
+                elapsed_seconds=elapsed,
+                approval_token=approval_token,
+                error_message=err_msg,
+            )
             return ToolResult(
                 tool_name=tool_name,
                 success=False,
-                error=f"Error executing tool '{tool_name}': {str(e)}",
+                error=err_msg,
+                is_verified=False,
+            )
+        except Exception as e:
+            elapsed = time.perf_counter() - t0
+            err_msg = f"Error executing tool '{tool_name}': {str(e)}"
+            tool_logger.log(
+                tool_name=tool_name,
+                permission_level=perm_level,
+                parameters=params,
+                status="FAILED",
+                elapsed_seconds=elapsed,
+                approval_token=approval_token,
+                error_message=err_msg,
+            )
+            return ToolResult(
+                tool_name=tool_name,
+                success=False,
+                error=err_msg,
                 is_verified=False,
             )
 

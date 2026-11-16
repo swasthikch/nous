@@ -1,91 +1,78 @@
-"""Permission Manager for NOUS AI Tools.
+"""Permission Manager for NOUS AI Tools (Phase 3 Unified).
 
-Enforces security boundaries, risk classification, and authorization checks
-to prevent prompt injection and unauthorized execution of sensitive operations.
+Maintains backward compatibility with legacy 3-tier risk checks
+while delegating to the 5-level zero-trust permission hierarchy.
 """
 
-from enum import Enum
-from typing import Optional
+from __future__ import annotations
+
+from typing import Any, Optional
 from pydantic import BaseModel
 
-
-class RiskLevel(str, Enum):
-    LOW = "low"          # Read-only information, math calculations, time checks
-    MEDIUM = "medium"    # Reading permitted files, updating calendar, changing settings
-    HIGH = "high"        # Sending emails, deleting data, shell commands, transactions
+from backend.app.tools.permissions import (
+    PermissionLevel,
+    RiskLevel,
+    risk_to_permission,
+    permission_manager as modern_permission_manager,
+    ToolPermissionManager,
+    PermissionCheckResult,
+)
+from backend.app.tools.approval import approval_manager, ApprovalRequest
+from backend.app.tools.logger import tool_logger
 
 
 class PermissionRequest(BaseModel):
     tool_name: str
     risk_level: RiskLevel
     description: str
-    parameters: dict
+    parameters: dict[str, Any]
     approved: bool = False
 
 
-class PermissionManager:
-    """Manages permissions and approval gates for tool execution."""
+class LegacyPermissionManagerAdapter:
+    """Adapter maintaining legacy check_permission() method signatures."""
 
-    def __init__(self, auto_approve_low: bool = True, auto_approve_medium: bool = False, auto_approve_high: bool = False):
-        self.auto_approve_low = auto_approve_low
-        self.auto_approve_medium = auto_approve_medium
-        self.auto_approve_high = auto_approve_high
-        self.pending_requests: dict[str, PermissionRequest] = {}
-        self.audit_log: list[dict] = []
+    def __init__(self) -> None:
+        self.modern = modern_permission_manager
 
-    def check_permission(self, tool_name: str, risk_level: RiskLevel, params: dict) -> tuple[bool, str]:
-        """Check if an action is authorized to execute.
-        
-        Returns:
-            (is_allowed, reason_or_status)
-        """
-        if risk_level == RiskLevel.LOW and self.auto_approve_low:
-            self.log_action(tool_name, risk_level, params, status="auto_approved")
-            return True, "Auto-approved (Low risk read-only action)"
+    def check_permission(
+        self,
+        tool_name: str,
+        risk_level: RiskLevel | str,
+        params: dict[str, Any],
+    ) -> tuple[bool, str]:
+        """Backward-compatible permission check returning (is_allowed, reason)."""
+        res = self.modern.check_permission(tool_name, risk_level, params)
+        status_label = "auto_approved" if res.is_allowed else "requires_approval"
+        tool_logger.log(
+            tool_name=tool_name,
+            permission_level=res.permission_level,
+            parameters=params,
+            status=status_label,
+            error_message=res.reason if not res.is_allowed else None,
+        )
+        return res.is_allowed, res.reason
 
-        if risk_level == RiskLevel.MEDIUM and self.auto_approve_medium:
-            self.log_action(tool_name, risk_level, params, status="auto_approved")
-            return True, "Auto-approved (Medium risk action authorized)"
+    def log_action(
+        self,
+        tool_name: str,
+        risk_level: RiskLevel | str,
+        params: dict[str, Any],
+        status: str,
+    ) -> None:
+        perm = risk_to_permission(risk_level)
+        tool_logger.log(
+            tool_name=tool_name,
+            permission_level=perm,
+            parameters=params,
+            status=status,
+        )
 
-        if risk_level == RiskLevel.HIGH and self.auto_approve_high:
-            self.log_action(tool_name, risk_level, params, status="auto_approved")
-            return True, "Auto-approved (High risk action authorized)"
-
-        # Actions requiring explicit user checks
-        self.log_action(tool_name, risk_level, params, status="requires_approval")
-        return False, f"Action '{tool_name}' is classified as {risk_level.value.upper()} risk and requires user authorization."
-
-    def log_action(self, tool_name: str, risk_level: RiskLevel, params: dict, status: str):
-        """Append to the in-memory log and persist to Security Vault database."""
-        import time
-        self.audit_log.append({
-            "timestamp": time.time(),
-            "tool_name": tool_name,
-            "risk_level": risk_level.value,
-            "parameters": {k: str(v) for k, v in params.items()},
-            "status": status,
-        })
-        try:
-            from backend.app.security.vault import security_vault
-            decision_map = {
-                "auto_approved": "ALLOWED",
-                "requires_approval": "REQUIRES_APPROVAL",
-                "denied": "DENIED",
-            }
-            security_vault.log_action(
-                event_type="tool_execution",
-                resource=tool_name,
-                risk_level=risk_level.value,
-                decision=decision_map.get(status, status.upper()),
-                actor="user",
-                details=params,
-            )
-        except Exception:
-            pass
-
-    def get_audit_logs(self, limit: int = 50) -> list[dict]:
-        """Retrieve recent security audit logs."""
-        return self.audit_log[-limit:]
+    def get_audit_logs(self, limit: int = 50) -> list[dict[str, Any]]:
+        """Retrieve recent audit logs in legacy dict format."""
+        logs = tool_logger.get_logs(limit=limit)
+        return [l.model_dump() for l in logs]
 
 
-permission_manager = PermissionManager()
+# Global instance
+permission_manager = LegacyPermissionManagerAdapter()
