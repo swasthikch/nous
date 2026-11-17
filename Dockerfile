@@ -31,6 +31,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application source code
 COPY backend /app/backend
 COPY frontend /app/frontend
+COPY desktop /app/desktop
 
 # Create persistent storage directories with proper permissions
 RUN mkdir -p /app/data/database /app/data/credentials /app/workspace /app/docs

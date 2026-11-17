@@ -117,6 +117,22 @@ class ModelRouter:
                 fallback_available=True,
             )
 
+        # In hybrid mode: check if local Ollama is available; if not available but cloud is configured, seamlessly route to cloud!
+        if cloud_provider.is_configured():
+            try:
+                from backend.app.core.ollama_client import ollama_client
+                conn = await ollama_client.check_connection()
+                if conn.get("status") != "connected":
+                    return RoutingDecision(
+                        selected_target="cloud",
+                        selected_model=cloud_provider.model,
+                        mode=self.mode,
+                        reason="Local Ollama is offline. Hybrid router seamlessly directed request to configured Cloud model.",
+                        fallback_available=False,
+                    )
+            except Exception:
+                pass
+
         # Standard hybrid fallback: use local for routine chats, calculations, and privacy
         return RoutingDecision(
             selected_target="local",

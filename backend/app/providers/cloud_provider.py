@@ -25,11 +25,36 @@ class CloudModelProvider(BaseModelProvider):
     """Cloud model provider for any OpenAI-compatible completions endpoint."""
 
     def __init__(self) -> None:
-        self.enabled: bool = os.getenv("CLOUD_PROVIDER_ENABLED", "false").lower() in ("true", "1", "yes")
-        self.provider_name: str = os.getenv("CLOUD_PROVIDER_NAME", "openai").lower()
-        self.api_key: str = os.getenv("CLOUD_API_KEY", "")
-        self.base_url: str = os.getenv("CLOUD_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-        self.default_model: str = os.getenv("CLOUD_MODEL", "gpt-4o-mini")
+        self.api_key: str = (
+            os.getenv("CLOUD_API_KEY", "")
+            or os.getenv("GROQ_API_KEY", "")
+            or os.getenv("OPENAI_API_KEY", "")
+            or os.getenv("GEMINI_API_KEY", "")
+        ).strip()
+
+        raw_enabled = os.getenv("CLOUD_PROVIDER_ENABLED")
+        if raw_enabled is not None:
+            self.enabled: bool = raw_enabled.lower() in ("true", "1", "yes")
+        else:
+            self.enabled = bool(self.api_key)
+
+        raw_provider = os.getenv("CLOUD_PROVIDER_NAME", "").strip().lower()
+        raw_url = os.getenv("CLOUD_BASE_URL", "").strip()
+        raw_model = os.getenv("CLOUD_MODEL", "").strip()
+
+        if self.api_key.startswith("gsk_"):
+            self.provider_name: str = raw_provider or "groq"
+            self.base_url: str = (raw_url or "https://api.groq.com/openai/v1").rstrip("/")
+            self.default_model: str = raw_model or "llama-3.3-70b-versatile"
+        elif self.api_key.startswith("AIza"):
+            self.provider_name = raw_provider or "gemini"
+            self.base_url: str = (raw_url or "https://generativelanguage.googleapis.com/v1beta/openai").rstrip("/")
+            self.default_model = raw_model or "gemini-1.5-flash"
+        else:
+            self.provider_name = raw_provider or "openai"
+            self.base_url = (raw_url or "https://api.openai.com/v1").rstrip("/")
+            self.default_model = raw_model or "gpt-4o-mini"
+
         self.timeout = httpx.Timeout(60.0, connect=10.0)
 
     def get_provider_name(self) -> str:

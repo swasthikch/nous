@@ -634,17 +634,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (data.ai_engine) {
                 const isConnected = data.ai_engine.connection_status === "connected";
+                const isCloud = data.ai_engine.active_runtime === "cloud";
+                const specEngine = document.getElementById("spec-engine");
+
                 if (isConnected) {
                     systemStatusIndicator.className = "status-dot dot-online";
                     topStatusIndicator.className = "status-indicator connected";
-                    topStatusText.textContent = `Online · ${data.ai_engine.configured_model}`;
+                    const runtimeLabel = isCloud ? `Cloud (${data.ai_engine.cloud?.provider || "Groq"})` : "Local";
+                    topStatusText.textContent = `Online · ${runtimeLabel} · ${data.ai_engine.configured_model}`;
                     specModel.textContent = data.ai_engine.configured_model;
-                    activeModel = data.ai_engine.configured_model;
+                    activeModel = isCloud ? `cloud:${data.ai_engine.configured_model}` : data.ai_engine.configured_model;
+                    if (specEngine) {
+                        specEngine.textContent = isCloud ? `${(data.ai_engine.cloud?.provider || "Groq").toUpperCase()} Cloud` : "Ollama Local";
+                    }
                 } else {
                     systemStatusIndicator.className = "status-dot dot-offline";
                     topStatusIndicator.className = "status-indicator error";
-                    topStatusText.textContent = "Ollama Disconnected";
+                    topStatusText.textContent = "AI Engine Disconnected";
                     specModel.textContent = "Offline";
+                    if (specEngine) specEngine.textContent = "Offline";
                 }
             }
 
@@ -694,13 +702,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             modelSelect.innerHTML = "";
             const localModels = data.available_local_models || [];
+            const hasCloud = data.cloud_provider && data.cloud_provider.configured;
 
-            if (localModels.length === 0) {
-                const opt = document.createElement("option");
-                opt.value = "";
-                opt.textContent = "No models installed";
-                modelSelect.appendChild(opt);
-            } else {
+            if (localModels.length > 0) {
                 localModels.forEach((modelName) => {
                     const opt = document.createElement("option");
                     opt.value = modelName;
@@ -714,11 +718,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             }
 
-            if (data.cloud_provider && data.cloud_provider.configured) {
+            if (hasCloud) {
                 const cloudOpt = document.createElement("option");
                 cloudOpt.value = `cloud:${data.cloud_provider.model}`;
                 cloudOpt.textContent = `[Cloud] ${data.cloud_provider.model}`;
+                if (localModels.length === 0 || activeModel.startsWith("cloud:")) {
+                    cloudOpt.selected = true;
+                    activeModel = cloudOpt.value;
+                    specModel.textContent = data.cloud_provider.model;
+                }
                 modelSelect.appendChild(cloudOpt);
+            }
+
+            if (localModels.length === 0 && !hasCloud) {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "No models installed";
+                modelSelect.appendChild(opt);
             }
         } catch (e) {
             console.warn("Could not fetch models:", e);
