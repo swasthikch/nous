@@ -45,7 +45,7 @@ class CloudModelProvider(BaseModelProvider):
         if self.api_key.startswith("gsk_"):
             self.provider_name: str = raw_provider or "groq"
             self.base_url: str = (raw_url or "https://api.groq.com/openai/v1").rstrip("/")
-            self.default_model: str = raw_model or "llama-3.1-8b-instant"
+            self.default_model: str = raw_model or "qwen/qwen3.8-27b"
         elif self.api_key.startswith("AIza"):
             self.provider_name = raw_provider or "gemini"
             self.base_url: str = (raw_url or "https://generativelanguage.googleapis.com/v1beta/openai").rstrip("/")
@@ -183,15 +183,20 @@ class CloudModelProvider(BaseModelProvider):
                     headers=headers,
                     json=payload,
                 )
-                if res.status_code == 404 and target_model != "llama-3.1-8b-instant" and self.provider_name == "groq":
-                    payload["model"] = "llama-3.1-8b-instant"
-                    self.default_model = "llama-3.1-8b-instant"
-                    target_model = "llama-3.1-8b-instant"
-                    res = await client.post(
-                        f"{self.base_url}/chat/completions",
-                        headers=headers,
-                        json=payload,
-                    )
+                if res.status_code == 404 and self.provider_name == "groq":
+                    for alt in ("qwen/qwen3.8-27b", "openai/gpt-oss-120b", "openai/gpt-oss-20b", "llama-3.3-70b-versatile", "llama-3.1-8b-instant"):
+                        if alt != target_model:
+                            payload["model"] = alt
+                            retry_res = await client.post(
+                                f"{self.base_url}/chat/completions",
+                                headers=headers,
+                                json=payload,
+                            )
+                            if retry_res.status_code == 200:
+                                res = retry_res
+                                target_model = alt
+                                self.default_model = alt
+                                break
 
                 elapsed = time.perf_counter() - t0
 
@@ -267,46 +272,45 @@ class CloudModelProvider(BaseModelProvider):
                 ) as stream_res:
                     if stream_res.status_code != 200:
                         err_text = await stream_res.aread()
-                        if stream_res.status_code == 404 and target_model != "llama-3.1-8b-instant" and self.provider_name == "groq":
-                            payload["model"] = "llama-3.1-8b-instant"
-                            self.default_model = "llama-3.1-8b-instant"
-                            async with client.stream(
-                                "POST",
-                                f"{self.base_url}/chat/completions",
-                                headers=headers,
-                                json=payload,
-                            ) as retry_res:
-                                if retry_res.status_code != 200:
-                                    r_err = await retry_res.aread()
-                                    yield StreamChunk(
-                                        content=f"Error from cloud provider (HTTP {retry_res.status_code}): {r_err.decode('utf-8', errors='ignore')[:200]}",
-                                        is_final=True,
-                                        finish_reason="error",
-                                    )
-                                    return
-                                async for line in retry_res.aiter_lines():
-                                    if not line or not line.strip():
-                                        continue
-                                    if line.startswith("data: "):
-                                        raw_data = line[6:].strip()
-                                        if raw_data == "[DONE]":
-                                            yield StreamChunk(content="", is_final=True, finish_reason="stop")
-                                            break
-                                        try:
-                                            chunk_data = json.loads(raw_data)
-                                            choices = chunk_data.get("choices", [])
-                                            if choices:
-                                                delta = choices[0].get("delta", {}).get("content", "")
-                                                finish_reason = choices[0].get("finish_reason")
-                                                is_done = bool(finish_reason)
-                                                yield StreamChunk(
-                                                    content=delta,
-                                                    is_final=is_done,
-                                                    finish_reason=finish_reason,
-                                                )
-                                        except json.JSONDecodeError:
-                                            pass
-                                return
+                        if stream_res.status_code == 404 and self.provider_name == "groq":
+                            for alt in ("qwen/qwen3.8-27b", "openai/gpt-oss-120b", "openai/gpt-oss-20b", "llama-3.3-70b-versatile"):
+                                if alt == target_model:
+                                    continue
+                                payload["model"] = alt
+                                self.default_model = alt
+                                try:
+                                    async with client.stream(
+                                        "POST",
+                                        f"{self.base_url}/chat/completions",
+                                        headers=headers,
+                                        json=payload,
+                                    ) as retry_res:
+                                        if retry_res.status_code == 200:
+                                            async for line in retry_res.aiter_lines():
+                                                if not line or not line.strip():
+                                                    continue
+                                                if line.startswith("data: "):
+                                                    raw_data = line[6:].strip()
+                                                    if raw_data == "[DONE]":
+                                                        yield StreamChunk(content="", is_final=True, finish_reason="stop")
+                                                        break
+                                                    try:
+                                                        chunk_data = json.loads(raw_data)
+                                                        choices = chunk_data.get("choices", [])
+                                                        if choices:
+                                                            delta = choices[0].get("delta", {}).get("content", "")
+                                                            finish_reason = choices[0].get("finish_reason")
+                                                            is_done = bool(finish_reason)
+                                                            yield StreamChunk(
+                                                                content=delta,
+                                                                is_final=is_done,
+                                                                finish_reason=finish_reason,
+                                                            )
+                                                    except json.JSONDecodeError:
+                                                        pass
+                                            return
+                                except Exception:
+                                    continue
 
                         yield StreamChunk(
                             content=f"Error from cloud provider (HTTP {stream_res.status_code}): {err_text.decode('utf-8', errors='ignore')[:200]}",
