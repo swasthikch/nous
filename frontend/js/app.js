@@ -719,15 +719,25 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (hasCloud) {
-                const cloudOpt = document.createElement("option");
-                cloudOpt.value = `cloud:${data.cloud_provider.model}`;
-                cloudOpt.textContent = `[Cloud] ${data.cloud_provider.model}`;
-                if (localModels.length === 0 || activeModel.startsWith("cloud:")) {
-                    cloudOpt.selected = true;
-                    activeModel = cloudOpt.value;
-                    specModel.textContent = data.cloud_provider.model;
+                const cloudModels = (data.cloud_provider.available_models && data.cloud_provider.available_models.length > 0)
+                    ? data.cloud_provider.available_models.filter(m => m.includes("llama") || m.includes("gemma") || m.includes("mixtral") || m.includes("gpt"))
+                    : [data.cloud_provider.model];
+
+                if (!cloudModels.includes(data.cloud_provider.model)) {
+                    cloudModels.unshift(data.cloud_provider.model);
                 }
-                modelSelect.appendChild(cloudOpt);
+
+                cloudModels.forEach(cm => {
+                    const cloudOpt = document.createElement("option");
+                    cloudOpt.value = `cloud:${cm}`;
+                    cloudOpt.textContent = `[Cloud] ${cm}`;
+                    if (cm === data.cloud_provider.model && (localModels.length === 0 || activeModel.startsWith("cloud:"))) {
+                        cloudOpt.selected = true;
+                        activeModel = cloudOpt.value;
+                        specModel.textContent = cm;
+                    }
+                    modelSelect.appendChild(cloudOpt);
+                });
             }
 
             if (localModels.length === 0 && !hasCloud) {

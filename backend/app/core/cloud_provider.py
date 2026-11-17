@@ -38,7 +38,8 @@ class CloudProvider:
         if self.api_key.startswith("gsk_"):
             self.provider_name: str = raw_provider or "groq"
             self.base_url: str = (raw_url or "https://api.groq.com/openai/v1").rstrip("/")
-            self.model: str = raw_model or "llama-3.3-70b-versatile"
+            self.model: str = raw_model or "llama-3.1-8b-instant"
+            self.default_model: str = self.model
         elif self.api_key.startswith("AIza"):
             self.provider_name = raw_provider or "gemini"
             self.base_url = (raw_url or "https://generativelanguage.googleapis.com/v1beta/openai").rstrip("/")

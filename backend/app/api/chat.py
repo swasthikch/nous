@@ -42,6 +42,7 @@ async def list_models():
             "configured": orchestrator.cloud_provider.is_configured(),
             "provider_name": orchestrator.cloud_provider.provider_name,
             "model": orchestrator.cloud_provider.default_model,
+            "available_models": cloud_health.available_models,
             "status": cloud_health.status,
         },
     }
